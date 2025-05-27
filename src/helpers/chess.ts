@@ -1,6 +1,12 @@
-import type { GameState, Move } from "../types";
+import type { CastlingRights, GameState, Move } from "../types";
 
-export function getValidMoves(position: string[], pieceIndex: number, gameState: GameState): Move[] 
+export function getValidMoves(
+    position: string[], 
+    pieceIndex: number, 
+    enPassantTarget: number | null,
+    castlingRights: CastlingRights,
+
+): Move[] 
 {
     const piece = position[pieceIndex];
     if (!piece) return [];
@@ -13,7 +19,7 @@ export function getValidMoves(position: string[], pieceIndex: number, gameState:
     {
         case 'p':
         {
-            possibleMoves = getPawnMoves(position, pieceIndex, isWhite, gameState.enPassantTarget);
+            possibleMoves = getPawnMoves(position, pieceIndex, isWhite, enPassantTarget);
         } break;
         case 'r':
         {
@@ -33,7 +39,7 @@ export function getValidMoves(position: string[], pieceIndex: number, gameState:
         } break;
         case 'k':
         {
-            possibleMoves = getKingMoves(position, pieceIndex, isWhite, gameState.castlingRights);
+            possibleMoves = getKingMoves(position, pieceIndex, isWhite, castlingRights);
         } break;
     }
     
@@ -582,7 +588,8 @@ function isPathClear(position: string[], fromIndex: number, toIndex: number): bo
 export function isCheckmate(
     position: string[], 
     isWhiteToMove: boolean, 
-    gameState: GameState
+    enPassantTarget: number | null,
+    castlingRights: CastlingRights
 ): boolean 
 {
     if (!isInCheck(position, isWhiteToMove)) 
@@ -590,13 +597,14 @@ export function isCheckmate(
         return false;
     }
 
-    return !hasLegalMoves(position, isWhiteToMove, gameState);
+    return !hasLegalMoves(position, isWhiteToMove, enPassantTarget, castlingRights);
 }
 
 export function isStalemate(
     position: string[], 
     isWhiteToMove: boolean, 
-    gameState: GameState
+    enPassantTarget: number | null,
+    castlingRights: CastlingRights
 ): boolean 
 {
     if (isInCheck(position, isWhiteToMove)) 
@@ -604,7 +612,7 @@ export function isStalemate(
         return false;
     }
     
-    return !hasLegalMoves(position, isWhiteToMove, gameState);
+    return !hasLegalMoves(position, isWhiteToMove, enPassantTarget, castlingRights);
 }
 
 export function isInCheck(position: string[], isWhitePlayer: boolean): boolean 
@@ -625,7 +633,12 @@ export function isInCheck(position: string[], isWhitePlayer: boolean): boolean
     return isSquareUnderAttack(position, kingIndex, !isWhitePlayer);
 }
 
-export function hasLegalMoves(position: string[], isWhiteToMove: boolean, gameState: GameState): boolean 
+export function hasLegalMoves(
+    position: string[], 
+    isWhiteToMove: boolean, 
+    enPassantTarget: number | null,
+    castlingRights: CastlingRights
+): boolean 
 {
     for (let i = 0; i < 64; i++) 
     {
@@ -635,7 +648,7 @@ export function hasLegalMoves(position: string[], isWhiteToMove: boolean, gameSt
         const pieceIsWhite = piece === piece.toUpperCase();
         if (pieceIsWhite !== isWhiteToMove) continue;
         
-        const validMoves = getValidMoves(position, i, gameState);
+        const validMoves = getValidMoves(position, i, enPassantTarget, castlingRights);
         if (validMoves.length > 0) 
         {
             return true;

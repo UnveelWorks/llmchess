@@ -1,5 +1,7 @@
+import { Signal } from "@preact/signals-react";
 
 export type BoardPosition = string[];
+export type PieceColor = "white" | "black";
 export interface DraggedPiece {
     value: string;
     fromIndex: number;
@@ -13,15 +15,20 @@ export interface DraggedPiece {
     offsetY: number;
 }
 
+export interface CastlingRights {
+    whiteKingside: boolean;
+    whiteQueenside: boolean;
+    blackKingside: boolean;
+    blackQueenside: boolean;
+}
+
 export interface GameState {
-    castlingRights: {
-        whiteKingside: boolean,
-        whiteQueenside: boolean, 
-        blackKingside: boolean,
-        blackQueenside: boolean
-    },
-    enPassantTarget: number | null,
-    moveHistory: []
+    position: BoardPosition;
+    turn: PieceColor;
+    playingAs: PieceColor;
+    castlingRights: CastlingRights;
+    enPassantTarget: number | null;
+    moveHistory: Move[];
 }
 
 export interface Move {

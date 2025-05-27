@@ -1,88 +1,94 @@
-import { Component } from "react";
-import defaultPosition from "../../data/defaultPosition";
 import Piece from "../piece/Piece";
-import type { DraggedPiece, GameState, Move } from "../../types";
 import { getValidMoves, updateEnPassantTarget } from "../../helpers/chess";
+import { GameContext, type GameContextType } from "../../context/GameProvider";
+import { Component } from "react";
+import type { DraggedPiece } from "../../types";
+import type { Move } from "../../types";
 
 class Board extends Component<
     {}, 
     {
-        turn: "white" | "black";
-        position: string[];
-        draggedPiece: DraggedPiece | null;
         currentOverTile: number | null;
+        draggedPiece: DraggedPiece | null;
         validMoves: Move[];
     }
 >
 {
-    private gameState: GameState;
+    static contextType = GameContext;
+    declare context: GameContextType;
+    
     constructor(props: {})
     {
         super(props);
 
-        this.gameState = {
-            castlingRights: {
-                whiteKingside: true,
-                whiteQueenside: true,
-                blackKingside: true,
-                blackQueenside: true
-            },
-            enPassantTarget: 20,
-            moveHistory: []
-        };
-
         this.state = {
-            turn: "white",
-            position: [...defaultPosition],
-            draggedPiece: null,
             currentOverTile: null,
+            draggedPiece: null,
             validMoves: []
         };
     }
 
     render()
     {
+        const { game } = this.context;
+        const board = this.getVisualBoard();
+        
         return (
             <>
                 <div 
-                    className="w-full aspect-square grid grid-cols-8 grid-rows-8 rounded-md overflow-hidden shadow-lg cursor-pointer"
+                    className="aspect-square max-w-full max-h-full min-w-0 min-h-0 grid grid-cols-8 grid-rows-8 rounded-md overflow-hidden shadow-lg cursor-pointer"
                 >
                     {
-                        this.state.position.map((piece, index) => 
+                        board.map((square, visualIndex) => 
                         {
-                            const row = Math.floor(index / 8);
-                            const col = index % 8;
+                            const { piece, logicalIndex } = square;
+                            const row = Math.floor(visualIndex / 8);
+                            const col = visualIndex % 8;
                             const isDark = (row + col) % 2 === 1;
                             const bgImage = isDark ? "bg-dark-square" : "bg-light-square";
                             const pieceType = piece === piece.toUpperCase() ? "white" : "black";
 
+                            let marker = null;
+                            const isValid = this.state.validMoves.map(move => move.toIndex).includes(logicalIndex);
+                            if (isValid && piece)
+                            {
+                                marker = (
+                                    <div className="absolute inset-0 bg-red-700 opacity-30 pointer-events-none" />
+                                );
+                            }
+                            else if (isValid)
+                            {
+                                marker = (
+                                    <div className="absolute w-1/3 h-1/3 rounded-full left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-teal-700 opacity-50 pointer-events-none" />
+                                );
+                            }
+
                             return (
                                 <div 
-                                    key={index} 
-                                    id={`tile-${index}`}
+                                    key={logicalIndex} 
+                                    id={`tile-${logicalIndex}`}
                                     className={`relative flex items-center justify-center ${bgImage} bg-cover bg-center`}
                                 >
                                     {
                                         piece && (
                                             <Piece 
                                                 value={piece} 
-                                                index={index}
+                                                index={logicalIndex}
                                                 style={{
-                                                    opacity: this.state.draggedPiece?.fromIndex === index ? 0 : 1,
-                                                    pointerEvents: 
-                                                    this.state.draggedPiece || pieceType !== this.state.turn ? "none" : "auto"
+                                                    opacity: this.state.draggedPiece?.fromIndex === logicalIndex 
+                                                        ? 0 
+                                                        : 1,
+                                                    pointerEvents: this.state.draggedPiece || pieceType !== game.turn 
+                                                        ? "none" 
+                                                        : "auto"
                                                 }} 
                                                 onMouseDown={this.onPieceMouseDown}
                                             />
                                         )
                                     }
-
                                     {
-                                        this.state.validMoves.map(move => move.toIndex).includes(index) && (
-                                            <div className="absolute inset-0 bg-red-500 opacity-50 pointer-events-none" />
-                                        )
+                                        marker
                                     }
-
                                 </div>
                             );
                         })
@@ -107,6 +113,30 @@ class Board extends Component<
         );
     }
 
+    getVisualIndex = (index: number) => 
+    {
+        const { game } = this.context;
+        const perspective = game.playingAs;
+        return perspective === 'black' ? 63 - index : index;
+    }
+
+    getVisualBoard = () =>
+    {
+        const { game } = this.context;
+        const visualBoard = new Array(64);
+        
+        for (let logicalIndex = 0; logicalIndex < 64; logicalIndex++) 
+        {
+            const visualIndex = this.getVisualIndex(logicalIndex);
+            visualBoard[visualIndex] = {
+                piece: game.position[logicalIndex],
+                logicalIndex: logicalIndex
+            };
+        }
+        
+        return visualBoard;
+    }
+
     onMouseMove = (e: MouseEvent) =>
     {
         const target = e.target as HTMLElement;
@@ -126,13 +156,15 @@ class Board extends Component<
         }
 
         this.setState({
-            draggedPiece,
-            currentOverTile
+            draggedPiece: draggedPiece,
+            currentOverTile: currentOverTile
         });
     }
 
     onPieceMouseDown = (value: string, index: number, e: React.MouseEvent<HTMLImageElement>) => 
     {
+        const { game } = this.context;
+
         const target = e.target as HTMLElement;
         const rect = target.getBoundingClientRect();
         const offsetX = e.clientX - rect.left;
@@ -151,10 +183,16 @@ class Board extends Component<
             offsetY
         };
 
-        const validMoves = getValidMoves(this.state.position, index, this.gameState);
+        const validMoves = getValidMoves(
+            game.position, 
+            index, 
+            game.enPassantTarget, 
+            game.castlingRights
+        );
+
         this.setState({
             draggedPiece: newDraggedPiece,
-            validMoves
+            validMoves: validMoves
         });
 
         document.addEventListener("mousemove", this.onMouseMove);
@@ -170,6 +208,9 @@ class Board extends Component<
 
     move = () => 
     {
+        const { game, setGame } = this.context;
+        const newGame = structuredClone(game);
+
         if (
             this.state.currentOverTile === null ||
             !this.state.draggedPiece ||
@@ -184,19 +225,11 @@ class Board extends Component<
             return;
         }
 
-        const newState = {
-            position: this.state.position,
-            turn: this.state.turn,
-            draggedPiece: null,
-            currentOverTile: null,
-            validMoves: []
-        }
+        const isWhite = newGame.turn === "white";
 
-        const isWhite = this.state.turn === "white";
-
-        const newPosition = [...this.state.position];
-        newPosition[this.state.draggedPiece!.fromIndex] = "";
-        newPosition[this.state.currentOverTile!] = this.state.draggedPiece!.value;
+        const newPosition = [...newGame.position];
+        newPosition[this.state.draggedPiece.fromIndex] = "";
+        newPosition[this.state.currentOverTile!] = this.state.draggedPiece.value;
 
         const move = this.state.validMoves.find(move => move.toIndex === this.state.currentOverTile);
         if (move?.isCastling)
@@ -207,13 +240,13 @@ class Board extends Component<
 
             if (isWhite)
             {
-                this.gameState.castlingRights.whiteKingside = false;
-                this.gameState.castlingRights.whiteQueenside = false;
+                newGame.castlingRights.whiteKingside = false;
+                newGame.castlingRights.whiteQueenside = false;
             } 
             else 
             {
-                this.gameState.castlingRights.blackKingside = false;
-                this.gameState.castlingRights.blackQueenside = false;
+                newGame.castlingRights.blackKingside = false;
+                newGame.castlingRights.blackQueenside = false;
             }
         }
 
@@ -222,16 +255,23 @@ class Board extends Component<
             newPosition[move.affectedPiece!.fromIndex] = "";
         }
 
-        this.gameState.enPassantTarget = updateEnPassantTarget(
-            this.state.draggedPiece!.fromIndex, 
+        newGame.enPassantTarget = updateEnPassantTarget(
+            this.state.draggedPiece.fromIndex, 
             this.state.currentOverTile!, 
-            this.state.draggedPiece!.value
+            this.state.draggedPiece.value
         );
 
-        newState.position = newPosition;
-        newState.turn = isWhite ? "black" : "white";
+        setGame({
+            ...newGame,
+            position: newPosition,
+            turn: isWhite ? "black" : "white"
+        });
 
-        this.setState(newState);
+        this.setState({
+            draggedPiece: null,
+            validMoves: [],
+            currentOverTile: null
+        });
     }
 }
 
