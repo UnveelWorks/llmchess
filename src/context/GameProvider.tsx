@@ -1,10 +1,18 @@
 import { createContext, useContext, useState } from "react";
-import type { GameState } from "../types";
+import { GameModes, type GameState, type Players } from "../types.d";
 import defaultPosition from "../data/defaultPosition";
 
 export interface GameContextType {
+    isPlaying: boolean;
+    newGameModalOpen: boolean;
+    gameMode: GameModes;
+    players: Players | null;
     game: GameState;
+    setIsPlaying: React.Dispatch<React.SetStateAction<boolean>>;
     setGame: React.Dispatch<React.SetStateAction<GameState>>;
+    setNewGameModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    setGameMode: React.Dispatch<React.SetStateAction<GameModes>>;
+    setPlayers: React.Dispatch<React.SetStateAction<Players | null>>;
 }
 
 export const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -21,6 +29,10 @@ export const useGame = () =>
 
 export const GameProvider = ({ children }: { children: React.ReactNode }) => 
 {
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [newGameModalOpen, setNewGameModalOpen] = useState(false);
+    const [gameMode, setGameMode] = useState<GameModes>(GameModes.HumanVsAi);
+    const [players, setPlayers] = useState<Players | null>(null);
     const [game, setGame] = useState<GameState>({
         position: [...defaultPosition.white],
         turn: "white",
@@ -36,8 +48,16 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) =>
     });
 
     const value = {
+        isPlaying,
+        newGameModalOpen,
         game,
-        setGame
+        gameMode,
+        players,
+        setGame,
+        setIsPlaying,
+        setNewGameModalOpen,
+        setGameMode,
+        setPlayers
     };
 
     return (

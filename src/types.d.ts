@@ -1,4 +1,25 @@
-import { Signal } from "@preact/signals-react";
+import type { NAISDK } from "./helpers/aisdk";
+
+export enum GameModes {
+    HumanVsAi = "human_vs_ai",
+    AiVsAi = "ai_vs_ai"
+}
+
+export enum PlayerType {
+    Human = "human",
+    Ai = "ai"
+}
+
+export interface Players {
+    white: {
+        type: PlayerType;
+        model?: NAISDK.Model;
+    },
+    black: {
+        type: PlayerType;
+        model?: NAISDK.Model;
+    }
+};
 
 export type BoardPosition = string[];
 export type PieceColor = "white" | "black";
