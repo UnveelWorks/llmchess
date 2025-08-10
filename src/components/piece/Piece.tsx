@@ -1,26 +1,39 @@
 import { useCallback } from "react";
-import pieceImages from "../../data/pieceImages";
+import type { Tile } from "../../types";
 
 function Piece(props: {
-    value: string;
-    index?: number;
+    value: Tile | null;
     style?: React.CSSProperties;
-    onMouseDown?: (value: string, index: number, e: React.MouseEvent<HTMLImageElement>) => void;
-})
+    onMouseDown?: (value: Tile, e: React.MouseEvent<HTMLImageElement>) => void;
+    onTouchStart?: (value: Tile, e: React.TouchEvent<HTMLImageElement>) => void;
+}) 
 {
-    const handleMouseDown = useCallback((e: React.MouseEvent<HTMLImageElement>) => 
+    const handleMouseDown = (e: React.MouseEvent<HTMLImageElement>) => 
     {
-        props.onMouseDown?.(props.value, props.index ?? 0, e);
-    }, [props.value, props.index]);
+        props.onMouseDown?.(props.value!, e);
+    };
+
+    const handleTouchStart = (e: React.TouchEvent<HTMLImageElement>) => 
+    {
+        props.onTouchStart?.(props.value!, e);
+    };
 
     return (
-        <img 
-            src={pieceImages[props.value as keyof typeof pieceImages]}  
-            className={`w-full h-full select-none`}
-            style={props.style}
-            onMouseDown={handleMouseDown}
-        />
-    )
+        <>
+            {
+                props.value && (
+                    <img
+                        src={`/images/${props.value.color}${props.value.type}.png`}
+                        className={`absolute z-10 inset-0`}
+                        style={props.style}
+                        onMouseDown={handleMouseDown}
+                        onTouchStart={handleTouchStart}
+                        onDragStart={(e) => e.preventDefault()}
+                    />
+                )
+            }
+        </>
+    );
 }
 
 export default Piece;

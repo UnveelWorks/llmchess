@@ -18,11 +18,7 @@ const Schema = {
     api_keys: {
         key: "api_keys",
         value: {
-            openai: "",
-            anthropic: "",
-            google: "",
-            xai: "",
-            deepseek: ""
+            openrouter: ""
         }
     } as NStorage.SchemaItem<NAISDK.ApiKeys>
 };

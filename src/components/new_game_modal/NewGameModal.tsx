@@ -4,16 +4,17 @@ import { ModalHeader } from "../modal/Modal";
 import Modal from "../modal/Modal";
 import { BrainSvg } from "../svgs/Svgs";
 import Button from "../button/Button";
-import { useGame } from "../../context/GameProvider";
-import { GameModes, PlayerType, type Players } from "../../types.d";
+import { GameMode, PlayerType, type Players } from "../../types.d";
 import { useCallback, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import Select from "../select/Select";
 import { Models } from "../../helpers/aisdk";
+import { useGameStore } from "../../store/store";
+import type { Color } from "chess.js";
 
 const modes = [
     {
-        mode: GameModes.HumanVsAi,
+        mode: GameMode.HumanVsAI,
         icon: (
             <>
                 <BrainSvg className="w-6 h-6" />
@@ -23,7 +24,7 @@ const modes = [
         )
     },
     {
-        mode: GameModes.AiVsAi,
+        mode: GameMode.AIVsAI,
         icon: (
             <>
                 <BrainCircuitSvg className="w-6 h-6" />
@@ -36,33 +37,24 @@ const modes = [
 
 const models = Models.map((model) => 
 { 
-    const provider = model.provider.charAt(0).toUpperCase() + model.provider.slice(1);
     return {
         value: model.id,
-        label: `${provider} ${model.name}`
+        label: model.name
     }
 });
 
-function NewGameModal()
+function NewGameModal(props: {
+    open: boolean;
+    onClose: () => void;
+})
 {
-    const { 
-        newGameModalOpen, 
-        setNewGameModalOpen, 
-        setGameMode, 
-        setIsPlaying,
-        setPlayers
-    } = useGame();
-    const [gameMode, setLocalGameMode] = useState<GameModes>(GameModes.HumanVsAi);
+    const { startGame } = useGameStore();
+    const [gameMode, setLocalGameMode] = useState<GameMode>(GameMode.HumanVsAI);
     const [model1, setModel1] = useState<string>(models[0].value);
     const [model2, setModel2] = useState<string>(models[0].value);
-    const [pieceColor, setPieceColor] = useState<string>("black");
+    const [pieceColor, setPieceColor] = useState<string>("b");
 
-    const handleNewGameClose = () => 
-    {
-        setNewGameModalOpen(false);
-    }
-
-    const handleGameModeChange = (mode: GameModes) => 
+    const handleGameModeChange = (mode: GameMode) => 
     {
         setLocalGameMode(mode);
     }
@@ -93,40 +85,39 @@ function NewGameModal()
             }
         }
 
+        let playingAs: Color = "w";
         const ai1 = Models.find((model) => model.id === model1);
-        if (gameMode === GameModes.HumanVsAi)
+        if (gameMode === GameMode.HumanVsAI)
         {
-            if (pieceColor === "white")
+            if (pieceColor === "w")
             {
-                players.white.type = PlayerType.Ai;
+                players.white.type = PlayerType.AI;
                 players.white.model = ai1;
+                playingAs = "b";
             }
             else
             {
-                players.black.type = PlayerType.Ai;
+                players.black.type = PlayerType.AI;
                 players.black.model = ai1;
+                playingAs = "w";
             }
         }
         else 
         {
             const ai2 = Models.find((model) => model.id === model2);
-            players.white.type = PlayerType.Ai;
+            players.white.type = PlayerType.AI;
             players.white.model = ai1;
-            players.black.type = PlayerType.Ai;
+            players.black.type = PlayerType.AI;
             players.black.model = ai2;
         }
 
-        console.log(players);
-
-        setPlayers(players);
-        setGameMode(gameMode);
-        setIsPlaying(true);
-        setNewGameModalOpen(false);
-    }, [model1, model2, pieceColor, gameMode]);
+        startGame(players, gameMode, playingAs);
+        props.onClose();
+    }, [model1, model2, pieceColor, gameMode, startGame]);
 
     return (
-        <Modal open={newGameModalOpen} className="absolute z-1">
-            <ModalHeader title="New Game" onClose={handleNewGameClose} />
+        <Modal open={props.open}>
+            <ModalHeader title="New Game" onClose={props.onClose} />
             <ModalContent className="p-6">
                 <div className="h-14 flex border border-white/10 rounded-md cursor-pointer overflow-hidden">
                     {
@@ -149,16 +140,18 @@ function NewGameModal()
                     }
                 </div>
                 {
-                    gameMode === GameModes.HumanVsAi && (
+                    gameMode === GameMode.HumanVsAI && (
                         <div  className="mt-6">
+                            <span className="text-sm font-medium text-neutral-400">Play Against</span>
                             <Select
+                                className="mt-1"
                                 options={models} 
                                 label="Model" 
                                 value={model1}
                                 onChange={handleModel1Change}
                             />
                             <Select
-                                options={[ { value: "black", label: "Black" }, { value: "white", label: "White" }]}
+                                options={[ { value: "b", label: "Black" }, { value: "w", label: "White" }]}
                                 label="Piece"
                                 value={pieceColor}
                                 onChange={handlePieceColorChange}
@@ -167,9 +160,9 @@ function NewGameModal()
                     )
                 }
                 {
-                    gameMode === GameModes.AiVsAi && (
+                    gameMode === GameMode.AIVsAI && (
                         <div className="mt-6">
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-1">
                                 <span className="text-sm font-medium text-neutral-400">White Pieces</span>
                                 <Select 
                                     className="mt-0" 
@@ -179,7 +172,7 @@ function NewGameModal()
                                     onChange={handleModel1Change}
                                 />
                             </div>
-                            <div className="mt-4 flex flex-col gap-2">
+                            <div className="mt-4 flex flex-col gap-1">
                                 <span className="text-sm font-medium text-neutral-400">Black Pieces</span>
                                 <Select 
                                     className="mt-0" 

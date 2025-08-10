@@ -1,13 +1,32 @@
 import type { NAISDK } from "./helpers/aisdk";
+import type { Square, Color, PieceSymbol, Move } from "chess.js";
 
-export enum GameModes {
-    HumanVsAi = "human_vs_ai",
-    AiVsAi = "ai_vs_ai"
+export interface Tile {
+	square: Square; 
+	type: PieceSymbol; 
+	color: Color;
+}
+
+export interface Game {
+    playing: boolean;
+    playingAs: Color;
+    players: Players;
+    mode: GameMode;
+	board: (Tile | null)[][];
+	turn: Color;
+    lastMove: Move | null;
+    checkmated: boolean;
+    draw: boolean;
+}
+
+export enum GameMode {
+    HumanVsAI = "human_vs_ai",
+    AIVsAI = "ai_vs_ai"
 }
 
 export enum PlayerType {
     Human = "human",
-    Ai = "ai"
+    AI = "ai"
 }
 
 export interface Players {
@@ -20,46 +39,3 @@ export interface Players {
         model?: NAISDK.Model;
     }
 };
-
-export type BoardPosition = string[];
-export type PieceColor = "white" | "black";
-export interface DraggedPiece {
-    value: string;
-    fromIndex: number;
-    width: number;
-    height: number;
-    position: {
-        x: number;
-        y: number;
-    };
-    offsetX: number;
-    offsetY: number;
-}
-
-export interface CastlingRights {
-    whiteKingside: boolean;
-    whiteQueenside: boolean;
-    blackKingside: boolean;
-    blackQueenside: boolean;
-}
-
-export interface GameState {
-    position: BoardPosition;
-    turn: PieceColor;
-    playingAs: PieceColor;
-    castlingRights: CastlingRights;
-    enPassantTarget: number | null;
-    moveHistory: Move[];
-}
-
-export interface Move {
-    fromIndex: number;
-    toIndex: number;
-    piece: string;
-    isCastling?: boolean;
-    isEnPassant?: boolean;
-    affectedPiece?: {
-        fromIndex: number;
-        toIndex: number;
-    }
-}

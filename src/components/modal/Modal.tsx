@@ -53,7 +53,7 @@ function Modal(props: {
 })  
 {
     const classes = twMerge(
-        "fixed inset-0 flex items-center justify-center bg-linear-to-b from-black/30 to-black/60 pointer-events-none opacity-0 transition-all duration-200 z-10 shadow-lg",
+        "fixed inset-0 flex items-center justify-center bg-linear-to-b from-black/30 to-black/60 pointer-events-none opacity-0 transition-all duration-200 z-50 shadow-lg",
         props.className,
         props.open && "pointer-events-auto opacity-100"
     );

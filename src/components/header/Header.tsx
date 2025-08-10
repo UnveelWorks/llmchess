@@ -1,24 +1,25 @@
 import { useCallback, useEffect, useState } from "react";
-import { useApp } from "../../context/AppProvider";
+import type { ModelMessage } from "ai";
+import type { NAISDK } from "../../helpers/aisdk";
 import Container from "../container/Container";
 import IconButton from "../button/Button";
 import Modal, { ModalContent, ModalFooter, ModalHeader } from "../modal/Modal";
-import { ClaudeSvg, GeminiSvg, GithubSvg, KeySvg, OpenAiSvg } from "../svgs/Svgs";
+import { GithubSvg, KeySvg } from "../svgs/Svgs";
 import Input from "../input/Input";
 import Button from "../button/Button";
-import { getModel, NAISDK } from "../../helpers/aisdk";
-import type { CoreMessage } from "ai";
+import { getModel } from "../../helpers/aisdk";
 import AISDK from "../../helpers/aisdk";
 import { tryCatch } from "../../helpers/tryCatch";
 import toast from "react-hot-toast";
 import Storage from "../../storage/storage";
+import { OpenRouterSvg } from "../svgs/Svgs";
+import { useApiKeysStore } from "../../store/store";
 
 function Header()
 {
-    const { apiKeysModalOpen, setApiKeysModalOpen, apiKeys, setApiKeys } = useApp();
-    const [openAiApiKey, setOpenAiApiKey] = useState(apiKeys.openai);
-    const [anthropicApiKey, setAnthropicApiKey] = useState(apiKeys.anthropic);
-    const [googleApiKey, setGoogleApiKey] = useState(apiKeys.google);
+    const { apiKeys, setApiKeys } = useApiKeysStore();
+    const [apiKeysModalOpen, setApiKeysModalOpen] = useState(false);
+    const [openRouterApiKey, setOpenRouterApiKey] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
     const handleApiKeysModalOpen = useCallback(() => 
@@ -31,38 +32,19 @@ function Header()
         setApiKeysModalOpen(false);
     }, []);
 
-    const handleOpenAiApiKeyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => 
+    const handleOpenRouterApiKeyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => 
     {
         const target = e.target as HTMLInputElement;
-        setOpenAiApiKey(target.value);
-    }, []);
-
-    const handleAnthropicApiKeyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => 
-    {
-        const target = e.target as HTMLInputElement;
-        setAnthropicApiKey(target.value);
-    }, []);
-
-    const handleGoogleApiKeyChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => 
-    {
-        const target = e.target as HTMLInputElement;
-        setGoogleApiKey(target.value);
+        setOpenRouterApiKey(target.value);
     }, []);
 
     const verify = useCallback(async () => 
     {
-        if (
-            isLoading ||
-            (
-                !openAiApiKey && 
-                !anthropicApiKey && 
-                !googleApiKey
-            )
-        ) return;
+        if (isLoading || !openRouterApiKey) return;
         
         setIsLoading(true);
 
-        const messages: CoreMessage[] = [
+        const messages: ModelMessage[] = [
             {
                 role: "user",
                 content: "trying out the api, respond with only yes or no"
@@ -70,47 +52,13 @@ function Header()
         ];
 
         const apiKeys: NAISDK.ApiKeys = {
-            openai: openAiApiKey,
-            anthropic: anthropicApiKey,
-            google: googleApiKey,
-            xai: "",
-            deepseek: ""
+            openrouter: openRouterApiKey
         };
 
         const aisdk = new AISDK(apiKeys);
-        if (openAiApiKey)
+        if (openRouterApiKey)
         {
             const model = getModel("gpt-4o-mini");
-            const { error } = await tryCatch(aisdk.generateText(
-                model,
-                messages
-            ));
-
-            if (error)
-            {
-                toast.error(error.message);
-                return;
-            }
-        }
-
-        if (anthropicApiKey)
-        {
-            const model = getModel("claude-3-5-haiku");
-            const { error } = await tryCatch(aisdk.generateText(
-                model,
-                messages
-            ));
-
-            if (error)
-            {
-                toast.error(error.message);
-                return;  
-            }
-        }
-
-        if (googleApiKey)
-        {
-            const model = getModel("gemini-2.5-flash");
             const { error } = await tryCatch(aisdk.generateText(
                 model,
                 messages
@@ -135,13 +83,12 @@ function Header()
         setApiKeys(apiKeys);
         toast.success("API keys saved");
         handleApiKeysModalClose();
-    }, [openAiApiKey, anthropicApiKey, googleApiKey]);
+    }, [openRouterApiKey]);
 
     useEffect(() =>
     {
-        setOpenAiApiKey(apiKeys.openai);
-        setAnthropicApiKey(apiKeys.anthropic);
-        setGoogleApiKey(apiKeys.google);
+        if (!apiKeysModalOpen) return;
+        setOpenRouterApiKey(apiKeys.openrouter);
     }, [apiKeysModalOpen]);
  
     return (
@@ -172,41 +119,15 @@ function Header()
                     <ModalContent className="p-6 flex flex-col gap-4">
                         <div className="flex items-center gap-2">
                             <div className="w-14 h-14 flex items-center justify-center bg-white rounded-md">
-                                <OpenAiSvg className="w-8 h-8"/>
+                                <OpenRouterSvg className="w-8 h-8 text-[#71717A]"/>
                             </div>
                             <Input 
                                 className="mt-0 flex-1"
-                                label="OpenAI API Key"
+                                label="OpenRouter API Key"
                                 type="text" 
                                 placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-                                value={openAiApiKey}
-                                onChange={handleOpenAiApiKeyChange}
-                            />
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-14 h-14 flex items-center justify-center bg-white rounded-md">
-                                <ClaudeSvg className="w-8 h-8"/>
-                            </div>
-                            <Input 
-                                className="mt-0 flex-1"
-                                label="Anthropic API Key"
-                                type="text" 
-                                placeholder="sk-ant-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
-                                value={anthropicApiKey}
-                                onChange={handleAnthropicApiKeyChange}
-                            />
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-14 h-14 flex items-center justify-center bg-white rounded-md">
-                                <GeminiSvg className="w-9 h-9"/>
-                            </div>
-                            <Input 
-                                className="mt-0 flex-1"
-                                label="Google Gemini API Key"
-                                type="text" 
-                                placeholder="AIxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
-                                value={googleApiKey}
-                                onChange={handleGoogleApiKeyChange}
+                                value={openRouterApiKey}
+                                onChange={handleOpenRouterApiKeyChange}
                             />
                         </div>                        
                     </ModalContent>

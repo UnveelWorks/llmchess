@@ -45,7 +45,7 @@ export function getValidMoves(
     
     const validMoves = possibleMoves.filter(move => 
     {
-        return !wouldLeaveKingInCheck(position, move.fromIndex, move.toIndex, isWhite);
+        return !wouldLeaveKingInCheck(position, move.from, move.to, isWhite);
     });
     
     return validMoves;
@@ -69,8 +69,8 @@ function getPawnMoves(
     if (oneForward >= 0 && oneForward < 64 && !position[oneForward]) 
     {
         moves.push({
-            fromIndex: index,
-            toIndex: oneForward,
+            from: index,
+            to: oneForward,
             piece: piece
         });
         
@@ -80,8 +80,8 @@ function getPawnMoves(
             if (twoForward >= 0 && twoForward < 64 && !position[twoForward]) 
             {
                 moves.push({
-                    fromIndex: index,
-                    toIndex: twoForward,
+                    from: index,
+                    to: twoForward,
                     piece: piece
                 });
             }
@@ -97,8 +97,8 @@ function getPawnMoves(
         if (targetPiece && isOpponentPiece(targetPiece, isWhite)) 
         {
             moves.push({
-                fromIndex: index,
-                toIndex: captureLeft,
+                from: index,
+                to: captureLeft,
                 piece: piece
             });
         }
@@ -107,13 +107,13 @@ function getPawnMoves(
         {
             const capturedPawnIndex = row * 8 + (captureLeft % 8);
             moves.push({
-                fromIndex: index,
-                toIndex: captureLeft,
+                from: index,
+                to: captureLeft,
                 piece: piece,
                 isEnPassant: true,
                 affectedPiece: {
-                    fromIndex: capturedPawnIndex,
-                    toIndex: -1
+                    from: capturedPawnIndex,
+                    to: -1
                 }
             });
         }
@@ -125,8 +125,8 @@ function getPawnMoves(
         if (targetPiece && isOpponentPiece(targetPiece, isWhite)) 
         {
             moves.push({
-                fromIndex: index,
-                toIndex: captureRight,
+                from: index,
+                to: captureRight,
                 piece: piece
             });
         }
@@ -135,13 +135,13 @@ function getPawnMoves(
         {
             const capturedPawnIndex = row * 8 + (captureRight % 8);    
             moves.push({
-                fromIndex: index,
-                toIndex: captureRight,
+                from: index,
+                to: captureRight,
                 piece: piece,
                 isEnPassant: true,
                 affectedPiece: {
-                    fromIndex: capturedPawnIndex,
-                    toIndex: -1
+                    from: capturedPawnIndex,
+                    to: -1
                 }
             });
         }
@@ -198,8 +198,8 @@ function getSlidingMoves(position: string[], index: number, isWhite: boolean, di
             if (!targetPiece) 
             {
                 moves.push({
-                    fromIndex: index,
-                    toIndex: newIndex,
+                    from: index,
+                    to: newIndex,
                     piece: piece
                 });
             } 
@@ -208,8 +208,8 @@ function getSlidingMoves(position: string[], index: number, isWhite: boolean, di
                 if (isOpponentPiece(targetPiece, isWhite)) 
                 {
                     moves.push({
-                        fromIndex: index,
-                        toIndex: newIndex,
+                        from: index,
+                        to: newIndex,
                         piece: piece
                     });
                 }
@@ -249,8 +249,8 @@ function getKnightMoves(position: string[], index: number, isWhite: boolean): Mo
             if (!targetPiece || isOpponentPiece(targetPiece, isWhite)) 
             {
                 moves.push({
-                    fromIndex: index,
-                    toIndex: newIndex,
+                    from: index,
+                    to: newIndex,
                     piece: piece
                 });
             }
@@ -291,8 +291,8 @@ function getKingMoves(
             if (!targetPiece || isOpponentPiece(targetPiece, isWhite)) 
             {
                 moves.push({
-                    fromIndex: index,
-                    toIndex: newIndex,
+                    from: index,
+                    to: newIndex,
                     piece: piece
                 });
             }
@@ -337,13 +337,13 @@ function getCastlingMoves(
             !isSquareUnderAttack(position, g1, !isWhite)) 
         {
             moves.push({
-                fromIndex: kingIndex,
-                toIndex: g1,
+                from: kingIndex,
+                to: g1,
                 piece: piece,
                 isCastling: true,
                 affectedPiece: {
-                    fromIndex: h1,
-                    toIndex: f1
+                    from: h1,
+                    to: f1
                 }
             });
         }
@@ -362,13 +362,13 @@ function getCastlingMoves(
             !isSquareUnderAttack(position, d1, !isWhite)) 
         {
             moves.push({
-                fromIndex: kingIndex,
-                toIndex: c1,
+                from: kingIndex,
+                to: c1,
                 piece: piece,
                 isCastling: true,
                 affectedPiece: {
-                    fromIndex: a1,
-                    toIndex: d1
+                    from: a1,
+                    to: d1
                 }
             });
         }
@@ -385,29 +385,29 @@ function isOpponentPiece(piece: string, isPlayerWhite: boolean): boolean
 
 function wouldLeaveKingInCheck(
     position: string[], 
-    fromIndex: number, 
-    toIndex: number, 
+    from: number, 
+    to: number, 
     isWhite: boolean
 ): boolean 
 {
     const newPosition = [...position];
-    const movingPiece = newPosition[fromIndex];
+    const movingPiece = newPosition[from];
     
     if (movingPiece.toLowerCase() === 'p') 
     {
-        const fromRow = Math.floor(fromIndex / 8);
-        const fromCol = fromIndex % 8;
-        const toCol = toIndex % 8;
+        const fromRow = Math.floor(from / 8);
+        const fromCol = from % 8;
+        const toCol = to % 8;
         
-        if (Math.abs(fromCol - toCol) === 1 && !newPosition[toIndex]) 
+        if (Math.abs(fromCol - toCol) === 1 && !newPosition[to]) 
         {
             const capturedPawnIndex = fromRow * 8 + toCol;
             newPosition[capturedPawnIndex] = "";
         }
     }
     
-    newPosition[toIndex] = movingPiece;
-    newPosition[fromIndex] = "";
+    newPosition[to] = movingPiece;
+    newPosition[from] = "";
     
     const kingPiece = isWhite ? 'K' : 'k';
     let kingIndex = -1;
@@ -560,12 +560,12 @@ function isKingAttacking(
     return rowDiff <= 1 && colDiff <= 1 && !(rowDiff === 0 && colDiff === 0);
 }
 
-function isPathClear(position: string[], fromIndex: number, toIndex: number): boolean 
+function isPathClear(position: string[], from: number, to: number): boolean 
 {
-    const fromRow = Math.floor(fromIndex / 8);
-    const fromCol = fromIndex % 8;
-    const toRow = Math.floor(toIndex / 8);
-    const toCol = toIndex % 8;
+    const fromRow = Math.floor(from / 8);
+    const fromCol = from % 8;
+    const toRow = Math.floor(to / 8);
+    const toCol = to % 8;
     
     const rowDir = toRow > fromRow ? 1 : toRow < fromRow ? -1 : 0;
     const colDir = toCol > fromCol ? 1 : toCol < fromCol ? -1 : 0;
@@ -658,18 +658,18 @@ export function hasLegalMoves(
     return false;
 }
 
-export function updateEnPassantTarget(fromIndex: number, toIndex: number, piece: string): number | null 
+export function updateEnPassantTarget(from: number, to: number, piece: string): number | null 
 {
     let enPassantTarget: number | null = null;
     
     if (piece.toLowerCase() === 'p') 
     {
-        const fromRow = Math.floor(fromIndex / 8);
-        const toRow = Math.floor(toIndex / 8);
+        const fromRow = Math.floor(from / 8);
+        const toRow = Math.floor(to / 8);
         
         if (Math.abs(fromRow - toRow) === 2) 
         {
-            enPassantTarget = fromIndex + (toIndex - fromIndex) / 2;
+            enPassantTarget = from + (to - from) / 2;
         }
     }
     
