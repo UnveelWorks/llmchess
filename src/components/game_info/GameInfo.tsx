@@ -3,7 +3,7 @@ import Button from "../button/Button";
 import NewGameModal from "../new_game_modal/NewGameModal";
 import { FlagSvg, HandshakeSvg, StopSvg } from "../svgs/Svgs";
 import { useGameStore } from "../../store/store";
-import { GameMode, PlayerType } from "../../types.d";
+import { GameMode } from "../../types.d";
 
 function GameInfo()
 {
