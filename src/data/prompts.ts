@@ -1,5 +1,3 @@
-import type { Color } from "chess.js";
-
 
 const defaultMovePrompt = `You are a chess grandmaster with deep strategic understanding and tactical precision. Your task is to analyze chess positions provided in FEN (Forsyth-Edwards Notation) format and determine the best possible move.
 

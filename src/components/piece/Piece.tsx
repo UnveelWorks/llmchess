@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import type { Tile } from "../../types";
 
 function Piece(props: {
