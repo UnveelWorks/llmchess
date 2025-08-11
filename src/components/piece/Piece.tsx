@@ -22,7 +22,7 @@ function Piece(props: {
             {
                 props.value && (
                     <img
-                        src={`/images/${props.value.color}${props.value.type}.png`}
+                        src={`/images/${props.value.color}${props.value.type}.webp`}
                         className={`absolute z-10 inset-0`}
                         style={props.style}
                         onMouseDown={handleMouseDown}

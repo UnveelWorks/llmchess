@@ -164,7 +164,7 @@ function Board(props: {
                                             key={square}
                                         >
                                             <img 
-                                                src={`/images/empty.png`} 
+                                                src={`/images/empty.webp`} 
                                                 className="w-full h-full select-none pointer-events-none" 
                                             />
                                             {
