@@ -1,21 +1,28 @@
 import { Outlet } from 'react-router';
 import Header from './components/header/Header';
 import { Toaster } from 'react-hot-toast';
-import { useApiKeysStore } from './store/store';
+import { useSettingsStore } from './store/store';
 import { useEffect } from 'react';
 import Storage from './storage/storage';
 import { tryCatch } from './helpers/tryCatch';
 
 function App() 
 {
-	const { setApiKeys } = useApiKeysStore();
+	const { setApiKeys, setRetries, setPrompts } = useSettingsStore();
 	useEffect(() => 
 	{
 		(async () =>
 		{
-			const { data: apiKeys, error } = await tryCatch(Storage.get(Storage.Schema.api_keys));
-			if (error) return;
-			setApiKeys(apiKeys);
+			await Storage.init();
+
+			const { data: apiKeys } = await tryCatch(Storage.get(Storage.Schema.api_keys));
+			setApiKeys(apiKeys || { openrouter: "" });
+
+			const { data: retries } = await tryCatch(Storage.get(Storage.Schema.retries));
+			setRetries(retries || 10);
+
+			const { data: prompts } = await tryCatch(Storage.get(Storage.Schema.prompts));
+			setPrompts(prompts || { moveGeneration: "", moveCorrection: "" });
 		})();
 	}, []);
 

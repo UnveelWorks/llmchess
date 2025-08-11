@@ -11,20 +11,46 @@ interface GameStore {
 	reset: () => void;
 }
 
-interface ApiKeysStore {
+interface SettingsStore {
 	apiKeys: NAISDK.ApiKeys;
+	retries: number;
+	prompts: {
+		moveGeneration: string;
+		moveCorrection: string;
+	};
 	setApiKeys: (apiKeys: NAISDK.ApiKeys) => void;
+	setRetries: (retries: number) => void;
+	setPrompts: (prompts: {
+		moveGeneration: string;
+		moveCorrection: string;
+	}) => void;
 }
 
 const chess = new Chess();
 
-const useApiKeysStore = create<ApiKeysStore>((set) => ({
+const useSettingsStore = create<SettingsStore>((set) => ({
 	apiKeys: {
 		openrouter: "",
+	},
+	retries: 10,
+	prompts: {
+		moveGeneration: "",
+		moveCorrection: "",
 	},
 	setApiKeys: (apiKeys: NAISDK.ApiKeys) => 
 	{
 		set({ apiKeys });
+	},
+	setRetries: (retries: number) => 
+	{
+		set({ retries });
+	},
+	setPrompts: (prompts: {
+		moveGeneration: string;
+		moveCorrection: string;
+	}) => 
+	{
+		set({ prompts });
 	}
 }));
 
@@ -111,6 +137,6 @@ function getFen()
 
 export {
 	useGameStore,
-	useApiKeysStore,
+	useSettingsStore,
 	getFen
 };

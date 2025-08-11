@@ -1,8 +1,7 @@
 import type { Color } from "chess.js";
 
 
-const movePrompt = `
-You are a chess grandmaster with deep strategic understanding and tactical precision. Your task is to analyze chess positions provided in FEN (Forsyth-Edwards Notation) format and determine the best possible move.
+const defaultMovePrompt = `You are a chess grandmaster with deep strategic understanding and tactical precision. Your task is to analyze chess positions provided in FEN (Forsyth-Edwards Notation) format and determine the best possible move.
 
 INPUT FORMAT:
 You will receive a FEN string representing the current board position and the color to move. For example:
@@ -107,11 +106,9 @@ Analyze each position with the depth and precision of a world-class grandmaster,
 
 INPUT:
 FEN: {FEN}
-TURN: {TURN}
-`;
+TURN: {TURN}`;
 
-const moveCorrectionPrompt = `
-You are a chess grandmaster who has made errors in your previous move analysis. You need to learn from all your mistakes and provide a valid move.
+const defaultMoveCorrectionPrompt = `You are a chess grandmaster who has made errors in your previous move analysis. You need to learn from all your mistakes and provide a valid move.
 
 INPUT FORMAT:
 You will receive:
@@ -217,32 +214,24 @@ The key is to learn from ALL previous mistakes, ensure you're moving the correct
 INPUT:
 FEN: {FEN}
 TURN: {TURN}
-PREVIOUS INVALID MOVES: {PREVIOUS_INVALID_MOVES}
-`;
+PREVIOUS INVALID MOVES: {PREVIOUS_INVALID_MOVES}`;
 
-function generateMovePrompt(turn: Color, fen: string)
+function generatePrompt(prompt: string, props: Record<string, string>)
 {
-	return movePrompt
-		.replace("{FEN}", fen)
-		.replace("{TURN}", turn === "w" ? "white" : "black");
-}
+	let result = prompt;
+	const keys = Object.keys(props);
+	for (const key of keys)
+	{
+		result = result.replace(`{${key}}`, props[key]);
+	}
 
-function generateMoveCorrectionPrompt(
-    turn: Color, 
-    fen: string, 
-    previousInvalidMoves: string[]
-)
-{
-	console.log(previousInvalidMoves);
-    return moveCorrectionPrompt
-        .replace("{FEN}", fen)
-        .replace("{TURN}", turn === "w" ? "white" : "black")
-        .replace("{PREVIOUS_INVALID_MOVES}", JSON.stringify(previousInvalidMoves));
+	return result;
 }
 
 const Prompts = {
-    generateMovePrompt,
-    generateMoveCorrectionPrompt
+	defaultMovePrompt,
+	defaultMoveCorrectionPrompt,
+	generatePrompt,
 }
 
 export default Prompts;

@@ -77,7 +77,7 @@ function GameInfo()
                 </div>
 
                 <div className="h-50 flex">
-                    <ScrollView class="p-0">
+                    <ScrollView className="p-0">
                         <div className="grid grid-cols-[2.5rem_1fr_1fr] gap-0 text-xs">
                             {
                                 Array.from({ length: Math.ceil(game.history.length / 2) }, (_, index) => 

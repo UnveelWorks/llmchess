@@ -188,7 +188,7 @@ function NewGameModal(props: {
             </ModalContent>
             <ModalFooter>
                 <Button theme="blue" type="medium" onClick={start}>
-                    Start
+                    Play
                 </Button>
             </ModalFooter>
         </Modal>

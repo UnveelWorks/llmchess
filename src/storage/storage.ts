@@ -1,6 +1,7 @@
 'use strict';
-
 import type { NAISDK } from "../helpers/aisdk";
+import Prompts from "../data/prompts";
+import { tryCatch } from "../helpers/tryCatch";
 
 export namespace NStorage 
 {
@@ -20,7 +21,21 @@ const Schema = {
         value: {
             openrouter: ""
         }
-    } as NStorage.SchemaItem<NAISDK.ApiKeys>
+    } as NStorage.SchemaItem<NAISDK.ApiKeys>,
+    retries: {
+        key: "retries",
+        value: 10
+    } as NStorage.SchemaItem<number>,
+    prompts: {
+        key: "prompts",
+        value: {
+            moveGeneration: Prompts.defaultMovePrompt,
+            moveCorrection: Prompts.defaultMoveCorrectionPrompt
+        }
+    } as NStorage.SchemaItem<{
+        moveGeneration: string;
+        moveCorrection: string;
+    }>,
 };
 
 async function repair()
@@ -32,6 +47,8 @@ async function init()
     {
         await repair();
         await checkAndStore(Schema.api_keys);
+        await checkAndStore(Schema.retries);
+        await checkAndStore(Schema.prompts);
     }
     catch (err)
     {
@@ -44,6 +61,8 @@ async function reset()
     try
     {
         await store(Schema.api_keys, Schema.api_keys.value);
+        await store(Schema.retries, Schema.retries.value);
+        await store(Schema.prompts, Schema.prompts.value);
     }
     catch (err)
     {

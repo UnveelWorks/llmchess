@@ -1,7 +1,7 @@
 import Container from "../components/container/Container";
 import Board from "../components/board/Board";
 import GameInfo from "../components/game_info/GameInfo";
-import { getFen, useApiKeysStore, useGameStore } from "../store/store";
+import { getFen, useSettingsStore, useGameStore } from "../store/store";
 import { useCallback, useEffect, useRef } from "react";
 import { GameMode } from "../types.d";
 import type { NAISDK } from "../helpers/aisdk";
@@ -21,7 +21,7 @@ const RESPONSE_SCHEMA = z.object({
 function Home()
 {
     const { game, movePiece } = useGameStore();
-    const { apiKeys } = useApiKeysStore();
+    const { apiKeys, prompts } = useSettingsStore();
     const lastTurn = useRef<Color>("w");
     const previousInvalidMoves = useRef<string[]>([]);
 
@@ -48,8 +48,22 @@ function Home()
         const ai = new AISDK(apiKeys);
         const fen = getFen();
         const prompt = retry 
-            ? Prompts.generateMoveCorrectionPrompt(game.turn, fen, previousInvalidMoves.current)
-            : Prompts.generateMovePrompt(game.turn, fen);
+            ? Prompts.generatePrompt(
+                prompts.moveCorrection, 
+                {
+                    FEN: fen,
+                    TURN: game.turn === "w" ? "white" : "black",
+                    PREVIOUS_INVALID_MOVES: JSON.stringify(previousInvalidMoves.current)
+                }
+            )
+            : Prompts.generatePrompt(
+                prompts.moveGeneration, 
+                {
+                    FEN: fen,
+                    TURN: game.turn === "w" ? "white" : "black"
+                }
+            );
+
 
         console.log(`${game.turn === "w" ? "White" : "Blacks"}'s Turn: ${model.name}`);
         console.log(retry ? "Correcting move..." : "Generating move...");
@@ -71,7 +85,7 @@ function Home()
 
         move(response.object.move);
     }, 
-    [apiKeys, game.turn, getFen]);
+    [apiKeys, prompts, game.turn, getFen]);
 
     const move = useCallback((move: string) => 
     {
