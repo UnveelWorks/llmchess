@@ -17,6 +17,7 @@ export interface Game {
     lastMove: Move | null;
     checkmated: boolean;
     draw: boolean;
+    history: string[];
 }
 
 export enum GameMode {

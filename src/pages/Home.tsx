@@ -79,16 +79,13 @@ function Home()
         try
         {
             movePiece(move);
-            if (status)
-            {
-                previousInvalidMoves.current = [];
-            }
+            if (status) previousInvalidMoves.current = [];
         }
         catch (err: any)
         {
             if (!status) return;
             console.log("Invalid move: ", err);
-            previousInvalidMoves.current.push(move);
+            if (!previousInvalidMoves.current.includes(move)) previousInvalidMoves.current.push(move);
             getAiMove(model!, true);
         }
     }, 

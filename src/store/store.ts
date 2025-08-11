@@ -46,6 +46,7 @@ const useGameStore = create<GameStore>((set) => ({
 		lastMove: null,
 		checkmated: false,
 		draw: false,
+		history: [],
 	},
 	startGame: (
 		players: Players,
@@ -75,6 +76,7 @@ const useGameStore = create<GameStore>((set) => ({
 				checkmated: chess.isCheckmate(),
 				playing: !chess.isGameOver(),
 				draw: chess.isDraw(),
+				history: chess.history(),
 			} 
 		}));
 	},
@@ -97,6 +99,7 @@ const useGameStore = create<GameStore>((set) => ({
 			playingAs: "w",
 			playing: false,
 			draw: false,
+			history: [],
 		} 
 	}),
 }));

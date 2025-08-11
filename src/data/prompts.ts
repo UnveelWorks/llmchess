@@ -222,9 +222,9 @@ PREVIOUS INVALID MOVES: {PREVIOUS_INVALID_MOVES}
 
 function generateMovePrompt(turn: Color, fen: string)
 {
-    return movePrompt
-        .replace("{FEN}", fen)
-        .replace("{TURN}", turn === "w" ? "white" : "black");
+	return movePrompt
+		.replace("{FEN}", fen)
+		.replace("{TURN}", turn === "w" ? "white" : "black");
 }
 
 function generateMoveCorrectionPrompt(
@@ -233,10 +233,11 @@ function generateMoveCorrectionPrompt(
     previousInvalidMoves: string[]
 )
 {
+	console.log(previousInvalidMoves);
     return moveCorrectionPrompt
         .replace("{FEN}", fen)
         .replace("{TURN}", turn === "w" ? "white" : "black")
-        .replace("{PREVIOUS_INVALID_MOVES}", previousInvalidMoves.join(", "));
+        .replace("{PREVIOUS_INVALID_MOVES}", JSON.stringify(previousInvalidMoves));
 }
 
 const Prompts = {

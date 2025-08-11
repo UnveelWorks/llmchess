@@ -4,6 +4,8 @@ import NewGameModal from "../new_game_modal/NewGameModal";
 import { FlagSvg, HandshakeSvg, StopSvg } from "../svgs/Svgs";
 import { useGameStore } from "../../store/store";
 import { GameMode } from "../../types.d";
+import { twJoin } from "tailwind-merge";
+import ScrollView from "../scroll_view/ScrollView";
 
 function GameInfo()
 {
@@ -45,9 +47,9 @@ function GameInfo()
     };
 
     return (
-        <div className="w-72 shrink-0">
+        <div className="w-72 shrink-0 h-full">
             <div className="relative rounded-md bg-neutral-700 overflow-hidden">
-                <div className="h-10 px-3 flex items-center gap-2 border-b border-white/5">
+                <div className="h-10 px-3 flex items-center gap-2 border-b border-white/10">
                     <div className="w-5 h-5 p-0.5 rounded-full border-2 border-neutral-500">
                         {
                             game.turn === topPlayer.color && (
@@ -59,7 +61,7 @@ function GameInfo()
                         { topPlayer.name }
                     </span>
                 </div>
-                <div className="h-10 px-3 flex items-center gap-2 border-b border-white/5">
+                <div className="h-10 px-3 flex items-center gap-2 border-b border-white/10">
                     <span className="flex-1 text-sm font-italic animate-pulse text-neutral-400 italic">
                         {
                             game.turn === topPlayer.color && (
@@ -74,11 +76,61 @@ function GameInfo()
                     </div>
                 </div>
 
-                <div className="h-50 overflow-y-auto">
-
+                <div className="h-50 flex">
+                    <ScrollView class="p-0">
+                        <div className="grid grid-cols-[2.5rem_1fr_1fr] gap-0 text-xs">
+                            {
+                                Array.from({ length: Math.ceil(game.history.length / 2) }, (_, index) => 
+                                {
+                                    const moveNumber = index + 1;
+                                    const whiteMove = game.history[index * 2];
+                                    const blackMove = game.history[index * 2 + 1];
+                                    const isEvenRow = index % 2 === 0;
+                                    
+                                    return [
+                                        <div 
+                                            key={`${index}-number`}
+                                            className={twJoin(
+                                                "h-8 flex items-center justify-center",
+                                                isEvenRow ? "bg-white/5" : "bg-transparent"
+                                            )}
+                                        >
+                                            <span className="font-bold text-neutral-400">
+                                                {moveNumber}.
+                                            </span>
+                                        </div>,
+                                        
+                                        <div 
+                                            key={`${index}-white`}
+                                            className={twJoin(
+                                                "h-8 flex items-center justify-center px-2",
+                                                isEvenRow ? "bg-white/5" : "bg-transparent"
+                                            )}
+                                        >
+                                            <span className="font-medium">
+                                                {whiteMove || ''}
+                                            </span>
+                                        </div>,
+                                        
+                                        <div 
+                                            key={`${index}-black`}
+                                            className={twJoin(
+                                                "h-8 flex items-center justify-center px-2",
+                                                isEvenRow ? "bg-white/5" : "bg-transparent"
+                                            )}
+                                        >
+                                            <span className="font-medium">
+                                                {blackMove || ''}
+                                            </span>
+                                        </div>
+                                    ];
+                                }).flat()
+                            }
+                        </div>
+                    </ScrollView>
                 </div>
 
-                <div className="h-10 px-3 flex items-center gap-2 border-t border-white/5">
+                <div className="h-10 px-3 flex items-center gap-2 border-t border-white/10">
                     <span className="flex-1 text-sm font-italic animate-pulse text-neutral-400 italic">
                         {
                             game.turn === bottomPlayer.color 
@@ -109,7 +161,7 @@ function GameInfo()
                         }
                     </div>
                 </div>
-                <div className="h-10 px-3 flex items-center gap-2 border-t border-white/5">
+                <div className="h-10 px-3 flex items-center gap-2 border-t border-white/10">
                     <div className="w-5 h-5 p-0.5 rounded-full border-2 border-neutral-500">
                         {
                             game.turn === bottomPlayer.color && (
