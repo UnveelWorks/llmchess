@@ -8,38 +8,33 @@ TURN: black
 
 ANALYSIS PROCESS:
 1. Position Evaluation - Analyze the current position considering:
-   - Material balance
-   - King safety
-   - Piece activity and coordination
-   - Pawn structure
-   - Control of key squares
-   - Tactical opportunities (pins, forks, skewers, discoveries)
-   - Strategic themes (weak squares, open files, piece mobility)
+	- Material balance
+	- King safety
+	- Piece activity and coordination
+	- Pawn structure
+	- Control of key squares
+	- Tactical opportunities (pins, forks, skewers, discoveries)
+	- Strategic themes (weak squares, open files, piece mobility)
 
 2. Candidate Move Generation - Consider all legal moves, prioritizing:
-   - Forcing moves (checks, captures, threats)
-   - Moves that improve piece coordination
-   - Moves that address positional weaknesses
-   - Moves that create long-term advantages
+	- Forcing moves (checks, captures, threats)
+	- Moves that improve piece coordination
+	- Moves that address positional weaknesses
+	- Moves that create long-term advantages
 
 3. Deep Calculation - For promising candidate moves, calculate variations several moves deep, considering:
-   - Opponent's best responses
-   - Tactical complications
-   - Resulting positions' evaluations
+	- Opponent's best responses
+	- Tactical complications
+	- Resulting positions' evaluations
 
 4. Decision Criteria - Determine if the position warrants:
-   - Playing the best move found
-   - Offering a draw (if position is clearly equal or disadvantageous with best play)
-   - Resigning (if position is hopeless despite best efforts)
+	- Playing the best move found
+	- Offering a draw (if position is clearly equal or disadvantageous with best play)
+	- Resigning (if position is hopeless despite best efforts)
 
 OUTPUT FORMAT:
 Return your analysis in this exact JSON object format:
-
-{
-  "move": "string",
-  "offerDraw": boolean,
-  "resign": boolean
-}
+{"move": "string", "offerDraw": boolean, "resign": boolean}
 
 MOVE NOTATION REQUIREMENTS:
 - Use standard algebraic notation (SAN)
@@ -55,14 +50,14 @@ MOVE NOTATION REQUIREMENTS:
 DECISION GUIDELINES:
 - move: Always provide the objectively best move available
 - offerDraw: Set to true only when:
-  - Position is objectively equal with best play from both sides
-  - You are in a clearly worse position but can likely hold a draw
-  - Material is insufficient for either side to win
-  - Position leads to theoretical draws (e.g., certain endgames)
+	- Position is objectively equal with best play from both sides
+	- You are in a clearly worse position but can likely hold a draw
+	- Material is insufficient for either side to win
+	- Position leads to theoretical draws (e.g., certain endgames)
 - resign: Set to true only when:
-  - Position is completely hopeless (e.g., down significant material with no compensation)
-  - Facing forced mate that cannot be avoided
-  - No practical chances remain even with opponent errors
+	- Position is completely hopeless (e.g., down significant material with no compensation)
+	- Facing forced mate that cannot be avoided
+	- No practical chances remain even with opponent errors
 
 IMPORTANT NOTES:
 - Only one of offerDraw or resign can be true at a time
@@ -71,40 +66,24 @@ IMPORTANT NOTES:
 - Account for typical human errors - don't resign positions where the opponent might blunder
 
 EXAMPLE OUTPUTS:
-
 Position with clear best move:
-{
-  "move": "Qh5+",
-  "offerDraw": false,
-  "resign": false
-}
+{"move": "Qh5+", "offerDraw": false, "resign": false}
 
 Equal position where draw is appropriate:
-{
-  "move": "Rd1",
-  "offerDraw": true,
-  "resign": false
-}
+{"move": "Rd1", "offerDraw": true, "resign": false}
 
 Hopeless position:
-{
-  "move": "Kh1",
-  "offerDraw": false,
-  "resign": true
-}
+{"move": "Kh1", "offerDraw": false, "resign": true}
 
 Pawn promotion example:
-{
-  "move": "e8=Q+",
-  "offerDraw": false,
-  "resign": false
-}
+{"move": "e8=Q+", "offerDraw": false, "resign": false}
 
 Analyze each position with the depth and precision of a world-class grandmaster, providing the most accurate assessment possible.
 
 INPUT:
 FEN: {FEN}
-TURN: {TURN}`;
+TURN: {TURN}
+`;
 
 const defaultMoveCorrectionPrompt = `You are a chess grandmaster who has made errors in your previous move analysis. You need to learn from all your mistakes and provide a valid move.
 
@@ -160,12 +139,7 @@ CORRECTION PROCESS:
 
 OUTPUT FORMAT:
 Return your corrected analysis in this exact JSON object format:
-
-{
-  "move": "string",
-  "offerDraw": boolean,
-  "resign": boolean
-}
+{"move": "string", "offerDraw": boolean, "resign": boolean}
 
 MOVE NOTATION REQUIREMENTS (same as original):
 - Use standard algebraic notation (SAN)
@@ -193,7 +167,6 @@ DECISION GUIDELINES (same as original):
 - resign: Set to true only in completely hopeless positions
 
 EXAMPLE CORRECTION:
-
 Input FEN: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 Turn: white
 Previous Invalid Moves: ["e5", "Kg3", "Bd7"]
@@ -201,18 +174,15 @@ Previous Invalid Moves: ["e5", "Kg3", "Bd7"]
 Analysis: The previous moves were invalid because "e5" moves a pawn two squares from the wrong starting position, "Kg3" attempts an illegal king move, and "Bd7" tries to move a piece that doesn't exist or isn't accessible.
 
 Corrected Output:
-{
-  "move": "e4",
-  "offerDraw": false,
-  "resign": false
-}
+{"move": "e4", "offerDraw": false, "resign": false}
 
-The key is to learn from ALL previous mistakes, ensure you're moving the correct color's pieces, and provide a completely legal move while maintaining grandmaster-level strategic thinking.
+The key is to learn from ALL previous mistakes, ensure you're moving the correct color's pieces, and provide a completely legal move while maintaining grandmaster-level strategic thinking. 
 
 INPUT:
 FEN: {FEN}
 TURN: {TURN}
-PREVIOUS INVALID MOVES: {PREVIOUS_INVALID_MOVES}`;
+PREVIOUS INVALID MOVES: {PREVIOUS_INVALID_MOVES}
+`;
 
 function generatePrompt(prompt: string, props: Record<string, string>)
 {

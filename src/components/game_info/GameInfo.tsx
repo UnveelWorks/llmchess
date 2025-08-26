@@ -1,7 +1,7 @@
-import { useCallback, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import Button from "../button/Button";
 import NewGameModal from "../new_game_modal/NewGameModal";
-import { FlagSvg, HandshakeSvg, StopSvg } from "../svgs/Svgs";
+import { FlagSvg, HandshakeSvg } from "../svgs/Svgs";
 import { useGameStore } from "../../store/store";
 import { GameMode } from "../../types.d";
 import { twJoin } from "tailwind-merge";
@@ -11,6 +11,7 @@ function GameInfo()
 {
     const { game } = useGameStore();
     const [newGameModalOpen, setNewGameModalOpen] = useState(false);
+    const moveListRef = useRef<HTMLDivElement>(null);
 
     const openNewGameModal = useCallback(() => 
     {
@@ -21,6 +22,12 @@ function GameInfo()
     {
         setNewGameModalOpen(false);
     }, []);
+
+    useLayoutEffect(() => 
+    {
+        if (!moveListRef.current) return;
+        moveListRef.current.scrollTo({ top: moveListRef.current.scrollHeight, behavior: "smooth" });
+    }, [game.turn]);
 
     const topPlayer = {
         name: game.mode === GameMode.HumanVsAI 
@@ -69,15 +76,10 @@ function GameInfo()
                             )
                         }
                     </span>
-                    <div className="flex items-center gap-2">
-                        <Button onlyIcon>
-                            <StopSvg className="w-5 h-5" />
-                        </Button>
-                    </div>
                 </div>
 
                 <div className="h-50 flex">
-                    <ScrollView className="p-0">
+                    <ScrollView className="p-0" viewRef={moveListRef}>
                         <div className="grid grid-cols-[2.5rem_1fr_1fr] gap-0 text-xs">
                             {
                                 Array.from({ length: Math.ceil(game.history.length / 2) }, (_, index) => 
@@ -153,11 +155,7 @@ function GameInfo()
                                     </Button>
                                 </>
                             )
-                            : (
-                                <Button onlyIcon>
-                                    <StopSvg className="w-5 h-5" />
-                                </Button>
-                            )
+                            : null
                         }
                     </div>
                 </div>

@@ -70,8 +70,8 @@ function Header()
 
     const handleResetPrompts = useCallback(() => 
     {
-        setMoveGenerationPrompt(Prompts.defaultMovePrompt);
-        setMoveCorrectionPrompt(Prompts.defaultMoveCorrectionPrompt);
+        setMoveGenerationPrompt(Prompts.defaultMovePrompt.trim());
+        setMoveCorrectionPrompt(Prompts.defaultMoveCorrectionPrompt.trim());
     }, []);
 
     const verify = useCallback(async () => 

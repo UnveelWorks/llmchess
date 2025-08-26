@@ -76,17 +76,17 @@ const Models:  NAISDK.Model[] = [
     {
         id: "claude-3-7-sonnet",
         name: "Anthropic Claude 3.7 Sonnet",
-        version: "anthropic/claude-3-7-sonnet-latest",
+        version: "anthropic/claude-3-7-sonnet",
     },
     {
         id: "claude-3-5-sonnet",
         name: "Anthropic Claude 3.5 Sonnet",
-        version: "anthropic/claude-3-5-sonnet-latest",
+        version: "anthropic/claude-3-5-sonnet",
     },
     {
         id: "claude-3-5-haiku",
         name: "Anthropic Claude 3.5 Haiku",
-        version: "anthropic/claude-3-5-haiku-latest",
+        version: "anthropic/claude-3-5-haiku",
     },
 
     // Google
@@ -167,8 +167,11 @@ class AISDK
 
         const { data: result, error } = await tryCatch(generateObject({
             model: openrouter.chat(model.version),
+            output: "object",
+            mode: "json",
+            system: "You must respond with valid JSON only. Do not include any explanatory text, code blocks, or markdown formatting.",
             prompt,
-            schema
+            schema,
         }));
 
         if (error)

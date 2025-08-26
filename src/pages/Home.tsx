@@ -21,9 +21,10 @@ const RESPONSE_SCHEMA = z.object({
 function Home()
 {
     const { game, movePiece } = useGameStore();
-    const { apiKeys, prompts } = useSettingsStore();
+    const { apiKeys, prompts, retries } = useSettingsStore();
     const lastTurn = useRef<Color>("w");
     const previousInvalidMoves = useRef<string[]>([]);
+    const retriesRef = useRef(0);
 
     const isAiMove = useCallback(() => 
     {
@@ -93,13 +94,25 @@ function Home()
         try
         {
             movePiece(move);
-            if (status) previousInvalidMoves.current = [];
+            if (status) 
+            {
+                previousInvalidMoves.current = [];
+                retriesRef.current = 0;
+            }
         }
         catch (err: any)
         {
             if (!status) return;
-            console.log("Invalid move: ", err);
+            console.log(err);
+
+            if (retriesRef.current >= retries)
+            {
+
+                return;
+            }
+
             if (!previousInvalidMoves.current.includes(move)) previousInvalidMoves.current.push(move);
+            retriesRef.current++;
             getAiMove(model!, true);
         }
     }, 
