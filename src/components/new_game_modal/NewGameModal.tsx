@@ -15,28 +15,30 @@ import type { Color } from "chess.js";
 const modes = [
     {
         mode: GameMode.HumanVsAI,
+        label: "Play vs AI",
         icon: (
             <>
                 <BrainSvg className="w-6 h-6" />
-                <span className="text-sm font-medium">VS</span>
+                <span className="text-xs font-medium text-neutral-500">VS</span>
                 <BrainCircuitSvg className="w-6 h-6" />
             </>
         )
     },
     {
         mode: GameMode.AIVsAI,
+        label: "AI vs AI",
         icon: (
             <>
                 <BrainCircuitSvg className="w-6 h-6" />
-                <span className="text-sm font-medium">VS</span>
+                <span className="text-xs font-medium text-neutral-500">VS</span>
                 <BrainCircuitSvg className="w-6 h-6" />
             </>
         )
     }
 ]
 
-const models = Models.map((model) => 
-{ 
+const models = Models.map((model) =>
+{
     return {
         value: model.id,
         label: model.name
@@ -54,12 +56,12 @@ function NewGameModal(props: {
     const [model2, setModel2] = useState<string>(models[0].value);
     const [pieceColor, setPieceColor] = useState<string>("b");
 
-    const handleGameModeChange = (mode: GameMode) => 
+    const handleGameModeChange = (mode: GameMode) =>
     {
         setLocalGameMode(mode);
     }
 
-    const handleModel1Change = (e: React.ChangeEvent<HTMLSelectElement>) => 
+    const handleModel1Change = (e: React.ChangeEvent<HTMLSelectElement>) =>
     {
         setModel1(e.target.value);
     }
@@ -102,7 +104,7 @@ function NewGameModal(props: {
                 playingAs = "w";
             }
         }
-        else 
+        else
         {
             const ai2 = Models.find((model) => model.id === model2);
             players.white.type = PlayerType.AI;
@@ -119,34 +121,37 @@ function NewGameModal(props: {
         <Modal open={props.open}>
             <ModalHeader title="New Game" onClose={props.onClose} />
             <ModalContent className="p-6">
-                <div className="h-14 flex border border-white/10 rounded-md cursor-pointer overflow-hidden">
+                <div className="flex gap-3">
                     {
                         modes.map((mode) => (
-                            <div 
+                            <div
                                 key={mode.mode}
                                 className={
                                     twMerge(
-                                        "flex-1 flex items-center justify-center gap-2 border-white/10 hover:bg-white/5 transition-colors duration-150 text-neutral-300 hover:text-white",
-                                        gameMode === mode.mode && "bg-white/10 text-white hover:bg-white/10"
+                                        "flex-1 flex flex-col items-center justify-center gap-2 p-4 rounded-xl border cursor-pointer transition-all duration-150",
+                                        gameMode === mode.mode
+                                            ? "bg-white/10 border-blue-500/40 text-white"
+                                            : "bg-white/[0.03] border-white/[0.06] text-neutral-400 hover:bg-white/[0.06] hover:text-white"
                                     )
                                 }
                                 onClick={() => handleGameModeChange(mode.mode)}
                             >
-                                {
-                                    mode.icon
-                                }
+                                <div className="flex items-center gap-2">
+                                    {mode.icon}
+                                </div>
+                                <span className="text-xs font-medium">{mode.label}</span>
                             </div>
                         ))
                     }
                 </div>
                 {
                     gameMode === GameMode.HumanVsAI && (
-                        <div  className="mt-6">
+                        <div className="mt-6">
                             <span className="text-sm font-medium text-neutral-400">Play Against</span>
                             <Select
                                 className="mt-1"
-                                options={models} 
-                                label="Model" 
+                                options={models}
+                                label="Model"
                                 value={model1}
                                 onChange={handleModel1Change}
                             />
@@ -164,20 +169,20 @@ function NewGameModal(props: {
                         <div className="mt-6">
                             <div className="flex flex-col gap-1">
                                 <span className="text-sm font-medium text-neutral-400">White Pieces</span>
-                                <Select 
-                                    className="mt-0" 
-                                    options={models} 
-                                    label="Model" 
+                                <Select
+                                    className="mt-0"
+                                    options={models}
+                                    label="Model"
                                     value={model1}
                                     onChange={handleModel1Change}
                                 />
                             </div>
                             <div className="mt-4 flex flex-col gap-1">
                                 <span className="text-sm font-medium text-neutral-400">Black Pieces</span>
-                                <Select 
-                                    className="mt-0" 
-                                    options={models} 
-                                    label="Model" 
+                                <Select
+                                    className="mt-0"
+                                    options={models}
+                                    label="Model"
                                     value={model2}
                                     onChange={handleModel2Change}
                                 />

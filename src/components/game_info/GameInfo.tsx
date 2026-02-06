@@ -1,6 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import Button from "../button/Button";
 import NewGameModal from "../new_game_modal/NewGameModal";
+import GameOver from "../game_over/GameOver";
 import { FlagSvg, HandshakeSvg } from "../svgs/Svgs";
 import { useGameStore } from "../../store/store";
 import { GameMode } from "../../types.d";
@@ -9,7 +10,7 @@ import ScrollView from "../scroll_view/ScrollView";
 
 function GameInfo()
 {
-    const { game } = useGameStore();
+    const { game, resign } = useGameStore();
     const [newGameModalOpen, setNewGameModalOpen] = useState(false);
     const moveListRef = useRef<HTMLDivElement>(null);
 
@@ -147,10 +148,10 @@ function GameInfo()
                             game.mode === GameMode.HumanVsAI 
                             ? (
                                 <>
-                                    <Button onlyIcon>
+                                    <Button onlyIcon onClick={() => resign(game.playingAs)}>
                                         <FlagSvg className="w-5 h-5" />
                                     </Button>
-                                    <Button onlyIcon>
+                                    <Button onlyIcon disabled>
                                         <HandshakeSvg className="w-5 h-5" />
                                     </Button>
                                 </>
@@ -173,11 +174,21 @@ function GameInfo()
                 </div>
                 {
                     !game.playing && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-neutral-700">
-                            <Button theme="blue" type="large" onClick={openNewGameModal}>
-                                Start New Game
-                            </Button>
-                        </div>
+                        game.result ? (
+                            <GameOver
+                                result={game.result}
+                                players={game.players}
+                                mode={game.mode}
+                                playingAs={game.playingAs}
+                                onNewGame={openNewGameModal}
+                            />
+                        ) : (
+                            <div className="absolute inset-0 flex items-center justify-center bg-neutral-700">
+                                <Button theme="blue" type="large" onClick={openNewGameModal}>
+                                    Start New Game
+                                </Button>
+                            </div>
+                        )
                     )
                 }
             </div>

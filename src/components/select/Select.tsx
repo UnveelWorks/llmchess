@@ -15,10 +15,10 @@ function Select(props: {
 })
 {
     const classes = twMerge(
-        "max-w-md h-14 mt-3 first:mt-0 pt-2 flex flex-col bg-neutral-600 text-neutral-300 rounded-md border border-transparent focus-within:border-neutral-600 transition-colors", 
+        "max-w-md h-14 mt-3 first:mt-0 pt-2 flex flex-col bg-white/[0.06] text-neutral-300 rounded-lg border border-white/[0.06] focus-within:border-blue-500/40 transition-colors",
         props.className
     );
-    
+
     return (
         <div className={classes}>
             {
@@ -32,7 +32,7 @@ function Select(props: {
             }
 
             <select
-                className="min-w-0 px-1 w-full flex-1 bg-transparent text-sm text-white font-body outline-none placeholder-neutral-400" 
+                className="min-w-0 px-1 w-full flex-1 bg-transparent text-sm text-white font-body outline-none placeholder-neutral-500"
                 value={props.value}
                 onChange={props.onChange}
             >

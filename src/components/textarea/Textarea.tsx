@@ -17,7 +17,7 @@ function Textarea(props: {
 })
 {
     const classes = twMerge(
-        "max-w-md mt-3 h-24 first:mt-0 flex flex-col bg-neutral-600 text-neutral-300 rounded-md border border-transparent focus-within:border-neutral-600 transition-colors", 
+        "max-w-md mt-3 h-24 first:mt-0 flex flex-col bg-white/[0.06] text-neutral-300 rounded-lg border border-white/[0.06] focus-within:border-blue-500/40 transition-colors", 
         props.className
     );
     

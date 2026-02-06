@@ -27,7 +27,7 @@ function PromotionPopup(props: {
                 ["q", "r", "b", "n"].map((piece) => (
                     <img
                         key={piece}
-                        src={`/images/${props.color}${piece}.png`}
+                        src={`/images/${props.color}${piece}.webp`}
                         className={`w-full h-full select-none hover:scale-110 transition-all duration-300`}
                         onClick={() => handlePromotion(piece)}
                     />

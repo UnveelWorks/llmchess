@@ -9,7 +9,7 @@ function Input(props: {
     placeholder?: string;
     maxLength?: number;
     autoFocus?: boolean;
-    
+
     onChange?: React.ChangeEventHandler<HTMLInputElement>;
     onFocus?: React.FocusEventHandler<HTMLInputElement>;
     onBlur?: React.FocusEventHandler<HTMLInputElement>;
@@ -18,10 +18,10 @@ function Input(props: {
 {
     const type = props.type ? props.type : "text";
     const classes = twMerge(
-        "max-w-md h-14 mt-3 first:mt-0 px-2 pt-2 flex flex-col bg-neutral-600 text-neutral-300 rounded-md border border-transparent focus-within:border-neutral-600 transition-colors", 
+        "max-w-md h-14 mt-3 first:mt-0 px-2 pt-2 flex flex-col bg-white/[0.06] text-neutral-300 rounded-lg border border-white/[0.06] focus-within:border-blue-500/40 transition-colors",
         props.className
     );
-    
+
     return (
         <div className={classes}>
             {
@@ -35,11 +35,11 @@ function Input(props: {
             }
 
             <input
-                className="min-w-0 p-0 w-full flex-1 bg-transparent text-sm text-white font-body outline-none placeholder-neutral-400"
-                type={type} 
+                className="min-w-0 p-0 w-full flex-1 bg-transparent text-sm text-white font-body outline-none placeholder-neutral-500"
+                type={type}
                 defaultValue={props.defaultValue}
                 value={props.value}
-                placeholder={props.placeholder} 
+                placeholder={props.placeholder}
                 maxLength={props.maxLength}
                 onChange={props.onChange}
                 onFocus={props.onFocus}

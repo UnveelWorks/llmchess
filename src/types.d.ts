@@ -15,8 +15,7 @@ export interface Game {
 	board: (Tile | null)[][];
 	turn: Color;
     lastMove: Move | null;
-    checkmated: boolean;
-    draw: boolean;
+    result: GameResult | null;
     history: string[];
 }
 
@@ -28,6 +27,20 @@ export enum GameMode {
 export enum PlayerType {
     Human = "human",
     AI = "ai"
+}
+
+export enum GameOverReason {
+    Checkmate = "checkmate",
+    Stalemate = "stalemate",
+    InsufficientMaterial = "insufficient_material",
+    ThreefoldRepetition = "threefold_repetition",
+    FiftyMoveRule = "fifty_move_rule",
+    Resignation = "resignation",
+}
+
+export interface GameResult {
+    reason: GameOverReason;
+    winner: Color | null;
 }
 
 export interface Players {

@@ -1,4 +1,5 @@
 import type { Color } from "chess.js";
+import type { Tile } from "../types.d";
 
 const squares = [
     "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",
@@ -14,6 +15,37 @@ const squares = [
 function getSquare(row: number, col: number, playingAs: Color)
 {
     return playingAs === "w" ? squares[row * 8 + col] : squares[63 - (row * 8 + col)];
+}
+
+const startingPieces: Record<string, number> = {
+    p: 8, n: 2, b: 2, r: 2, q: 1, k: 1
+};
+
+export function getCapturedPieces(board: (Tile | null)[][]): { white: string[]; black: string[] } {
+    const current: Record<string, Record<string, number>> = {
+        w: { p: 0, n: 0, b: 0, r: 0, q: 0, k: 0 },
+        b: { p: 0, n: 0, b: 0, r: 0, q: 0, k: 0 },
+    };
+
+    for (const row of board) {
+        for (const tile of row) {
+            if (tile) {
+                current[tile.color][tile.type]++;
+            }
+        }
+    }
+
+    const white: string[] = [];
+    const black: string[] = [];
+
+    for (const piece of ["q", "r", "b", "n", "p"]) {
+        const wCaptured = startingPieces[piece] - current["w"][piece];
+        const bCaptured = startingPieces[piece] - current["b"][piece];
+        for (let i = 0; i < wCaptured; i++) white.push(`w${piece}`);
+        for (let i = 0; i < bCaptured; i++) black.push(`b${piece}`);
+    }
+
+    return { white, black };
 }
 
 const Utils = {

@@ -63,6 +63,12 @@ export const CogSvg = (props: SvgProps) => (
     </svg>
 );
 
+export const ChevronUpSvg = (props: SvgProps) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={props.stroke || 2} stroke="currentColor" className={props.className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+    </svg>
+);
+
 export const RotateCounterClockwiseSvg = (props: SvgProps) => (
     <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth={props.stroke || 2} fill="none" strokeLinecap="round" strokeLinejoin="round" className={props.className}>
         <polyline points="1 4 1 10 7 10"></polyline>

@@ -15,7 +15,7 @@ function Button(props: {
     onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 })
 {
-    let theme = "text-neutral-300 bg-white/10 hover:text-white hover:bg-white/20",
+    let theme = "text-neutral-300 bg-white/10 hover:text-white hover:bg-white/15",
         spinnerClasses = "fill-white";
     switch (props.theme)
     {
@@ -26,37 +26,37 @@ function Button(props: {
         } break;
         case "blue":
         {
-            theme = "text-white bg-blue-500/80 hover:text-white hover:bg-blue-500";
+            theme = "text-white bg-blue-500/80 hover:text-white hover:bg-blue-500 shadow-lg shadow-blue-600/20";
         } break;
     }
 
-    let type = "h-7 text-sm", padding = "px-2";
+    let type = "h-8 text-sm min-w-[2rem]", padding = "px-2.5";
     switch (props.type)
     {
         case "base":
         {
-            type = "h-7 text-sm";
-            padding = "px-2";
+            type = "h-8 text-sm min-w-[2rem]";
+            padding = "px-2.5";
         } break;
-        case "medium": 
+        case "medium":
         {
-            type = "h-9 text-sm";
-            padding = "px-3";
+            type = "h-10 text-sm min-w-[2.5rem]";
+            padding = "px-3.5";
         } break;
-        case "large": 
+        case "large":
         {
-            type = "h-11 text-lg";
-            padding = "px-4";
+            type = "h-11 text-base min-w-[2.75rem]";
+            padding = "px-5";
         } break;
     }
 
     const classes = twMerge(
-        `relative flex items-center justify-center rounded-md cursor-pointer transition-colors duration-150 select-none ${theme} ${type} ${props.onlyIcon ? "aspect-square" : padding}`, 
+        `relative flex items-center justify-center rounded-lg cursor-pointer transition-all duration-150 select-none active:scale-[0.98] ${theme} ${type} ${props.onlyIcon ? "aspect-square" : padding}`,
         props.className,
-        props.disabled && "opacity-50",
+        props.disabled && "opacity-50 cursor-default active:scale-100",
     );
 
-    const handleClick = (e: React.MouseEvent<HTMLDivElement>) => 
+    const handleClick = (e: React.MouseEvent<HTMLDivElement>) =>
     {
         if (props.disabled)
         {

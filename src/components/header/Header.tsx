@@ -159,12 +159,12 @@ function Header()
     }, [settingsModalOpen]);
  
     return (
-        <header className="h-16 shrink-0">
+        <header className="h-14 shrink-0 border-b border-white/[0.06]">
             <Container className="h-full flex-row items-center">
                 <nav className="flex flex-1 items-center gap-2">
-                    <div className="flex-1 flex items-center gap-4">
-                        <img src="/images/logo.png" alt="LLMChess" className="w-8" />
-                        <h1 className="text-2xl font-normal"><b>LLM</b>Chess</h1>
+                    <div className="flex-1 flex items-center gap-3">
+                        <img src="/images/logo.png" alt="LLMChess" className="w-7" />
+                        <h1 className="text-xl font-normal"><b className="text-white">LLM</b><span className="text-neutral-400">Chess</span></h1>
                     </div>
                     <ul className="flex flex-1 items-center justify-end gap-2">
                         <li>
