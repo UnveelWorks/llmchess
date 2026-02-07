@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { MoveStats } from "../../types.d";
 import MoveHistory from "../move_history/MoveHistory";
 
 function Sidebar(props: {
@@ -7,6 +8,9 @@ function Sidebar(props: {
     playing: boolean;
     header?: ReactNode;
     footer?: ReactNode;
+    onMoveClick?: (index: number) => void;
+    viewingMoveIndex?: number | null;
+    moveStats?: (MoveStats | null)[];
 }) {
     return (
         <div className="hidden lg:flex w-80 self-stretch flex-col bg-neutral-800/50 backdrop-blur-md rounded-xl border border-white/[0.06] overflow-hidden">
@@ -17,7 +21,13 @@ function Sidebar(props: {
             </div>
 
             {/* Body — scrollable move list */}
-            <MoveHistory history={props.history} turn={props.turn} />
+            <MoveHistory
+                history={props.history}
+                turn={props.turn}
+                onMoveClick={props.onMoveClick}
+                viewingMoveIndex={props.viewingMoveIndex}
+                moveStats={props.moveStats}
+            />
 
             {/* Footer */}
             {props.footer && (

@@ -48,6 +48,16 @@ export function getCapturedPieces(board: (Tile | null)[][]): { white: string[]; 
     return { white, black };
 }
 
+const pieceValues: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
+
+export function getMaterialAdvantage(board: (Tile | null)[][]): { white: number; black: number } {
+    let w = 0, b = 0;
+    for (const row of board)
+        for (const tile of row)
+            if (tile) { const v = pieceValues[tile.type]; if (tile.color === 'w') w += v; else b += v; }
+    return { white: w - b, black: b - w };
+}
+
 const Utils = {
     getSquare
 }

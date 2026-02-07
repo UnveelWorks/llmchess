@@ -9,6 +9,8 @@ function PlayerPanel(props: {
     capturedPieces: string[];
     color: Color;
     actions?: ReactNode;
+    tokenInfo?: string;
+    materialAdvantage?: number;
 }) {
     return (
         <div className="w-full h-8 lg:h-11 flex items-center gap-2 lg:gap-3 px-1 shrink-0">
@@ -29,6 +31,11 @@ function PlayerPanel(props: {
                         {props.statusText}
                     </span>
                 )}
+                {props.tokenInfo && (
+                    <span className="text-[10px] text-neutral-500 shrink-0 hidden lg:inline">
+                        {props.tokenInfo}
+                    </span>
+                )}
             </div>
             <div className="flex items-center gap-0.5 shrink-0">
                 {props.capturedPieces.map((piece, i) => (
@@ -38,6 +45,9 @@ function PlayerPanel(props: {
                         className="w-4 h-4 opacity-70"
                     />
                 ))}
+                {props.materialAdvantage != null && props.materialAdvantage > 0 && (
+                    <span className="text-xs font-bold text-neutral-400 ml-1">+{props.materialAdvantage}</span>
+                )}
             </div>
             {props.actions && (
                 <div className="flex items-center gap-1 shrink-0 lg:hidden">

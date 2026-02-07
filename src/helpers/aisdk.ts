@@ -1,8 +1,8 @@
 'use strict';
-import { generateText, type LanguageModelUsage, type ModelMessage, generateObject } from "ai";
+import { generateText, tool, stepCountIs, type LanguageModelUsage, type ModelMessage } from "ai";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { tryCatch } from "./tryCatch";
-import type { z } from "zod";
+import { z } from "zod";
 
 export namespace NAISDK
 {
@@ -21,12 +21,15 @@ export namespace NAISDK
         usage: LanguageModelUsage;
     }
 
-    export interface ObjectResponse {
-        object: any;
-        usage: LanguageModelUsage;
-    }
-
     export type Role = "user" | "assistant" | "system";
+
+    export interface AgenticMoveResult {
+        move: string;
+        offerDraw: boolean;
+        resign: boolean;
+        usage: LanguageModelUsage;
+        steps: number;
+    }
 }
 
 const Models:  NAISDK.Model[] = [
@@ -217,34 +220,114 @@ class AISDK
         };
     }
 
-    generateObject = async (
+    generateAgenticMove = async (
         model: NAISDK.Model,
-        prompt: string,
-        schema: z.ZodObject<z.ZodRawShape>
-    ): Promise<NAISDK.ObjectResponse> =>
+        systemPrompt: string,
+        fen: string,
+        turn: string,
+        getLegalMovesFn: () => string[],
+        isLegalMoveFn: (san: string) => boolean,
+        maxSteps: number
+    ): Promise<NAISDK.AgenticMoveResult> =>
     {
         const openrouter = createOpenRouter({
             apiKey: this.apiKeys.openrouter,
         });
 
-        const { data: result, error } = await tryCatch(generateObject({
+        const makeMoveResultSchema = z.object({
+            success: z.boolean(),
+            move: z.string().optional(),
+            offerDraw: z.boolean().optional(),
+            resign: z.boolean().optional(),
+            error: z.string().optional(),
+            legalMoves: z.array(z.string()).optional(),
+        });
+
+        type MakeMoveResult = z.infer<typeof makeMoveResultSchema>;
+
+        const tools = {
+            get_legal_moves: tool({
+                description: "Get the current board position (FEN), whose turn it is, and all legal moves in standard algebraic notation (SAN).",
+                inputSchema: z.object({}),
+                execute: async () => ({
+                    fen,
+                    turn,
+                    moves: getLegalMovesFn(),
+                }),
+            }),
+            make_move: tool({
+                description: "Submit a chess move in standard algebraic notation (SAN). The move will be validated against the current position. If invalid, an error with the list of legal moves is returned.",
+                inputSchema: z.object({
+                    move: z.string().describe("The move in SAN notation (e.g. 'Nf3', 'e4', 'O-O')"),
+                    offerDraw: z.boolean().describe("Whether to offer a draw along with this move"),
+                    resign: z.boolean().describe("Whether to resign instead of making a move"),
+                }),
+                execute: async ({ move, offerDraw, resign }): Promise<MakeMoveResult> => {
+                    if (resign) {
+                        return { success: true, move: "", offerDraw: false, resign: true };
+                    }
+                    if (isLegalMoveFn(move)) {
+                        return { success: true, move, offerDraw, resign: false };
+                    }
+                    return {
+                        success: false,
+                        error: `"${move}" is not a legal move in this position.`,
+                        legalMoves: getLegalMovesFn(),
+                    };
+                },
+            }),
+        };
+
+        const { data: result, error } = await tryCatch(generateText({
             model: openrouter.chat(model.version),
-            output: "object",
-            prompt,
-            schema,
+            system: systemPrompt,
+            prompt: `It is ${turn}'s turn. The current FEN is: ${fen}\n\nUse the get_legal_moves tool to see available moves, then use make_move to submit your chosen move.`,
+            tools,
+            stopWhen: [
+                ({ steps }) => {
+                    for (let i = steps.length - 1; i >= 0; i--) {
+                        for (const tr of steps[i].toolResults) {
+                            if (
+                                tr.toolName === "make_move" &&
+                                typeof tr.output === "object" &&
+                                tr.output !== null &&
+                                (tr.output as MakeMoveResult).success === true
+                            ) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                },
+                stepCountIs(maxSteps),
+            ],
         }));
 
-        if (error)
-        {
+        if (error) {
             console.log(error);
-            throw new Error(error.message);   
+            throw new Error(error.message);
         }
 
-        const { object, usage } = result;
-        return {
-            object, 
-            usage
-        };
+        // Find the successful make_move result
+        for (let i = result.steps.length - 1; i >= 0; i--) {
+            for (const toolResult of result.steps[i].toolResults) {
+                if (toolResult.toolName === "make_move") {
+                    const res = toolResult.output as MakeMoveResult;
+                    if (res.success) {
+                        console.log(`AI completed in ${result.steps.length} step(s)`);
+                        return {
+                            move: res.move || "",
+                            offerDraw: res.offerDraw || false,
+                            resign: res.resign || false,
+                            usage: result.totalUsage,
+                            steps: result.steps.length,
+                        };
+                    }
+                }
+            }
+        }
+
+        throw new Error("AI did not produce a valid move within the step limit");
     }
 }
 

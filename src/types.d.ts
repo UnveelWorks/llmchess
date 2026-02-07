@@ -7,8 +7,22 @@ export interface Tile {
 	color: Color;
 }
 
+export interface AiColorStats {
+    inputTokens: number;
+    outputTokens: number;
+    steps: number;
+}
+
+export interface MoveStats {
+    inputTokens: number;
+    outputTokens: number;
+    steps: number;
+}
+
 export interface Game {
     playing: boolean;
+    paused: boolean;
+    drawOffered: boolean;
     playingAs: Color;
     players: Players;
     mode: GameMode;
@@ -17,6 +31,13 @@ export interface Game {
     lastMove: Move | null;
     result: GameResult | null;
     history: string[];
+    moveStats: (MoveStats | null)[];
+    aiStats: {
+        white: AiColorStats;
+        black: AiColorStats;
+    };
+    viewingMoveIndex: number | null;
+    viewingBoard: (Tile | null)[][] | null;
 }
 
 export enum GameMode {
@@ -36,6 +57,7 @@ export enum GameOverReason {
     ThreefoldRepetition = "threefold_repetition",
     FiftyMoveRule = "fifty_move_rule",
     Resignation = "resignation",
+    DrawAgreement = "draw_agreement",
 }
 
 export interface GameResult {

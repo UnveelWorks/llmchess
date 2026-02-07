@@ -28,13 +28,17 @@ const Schema = {
     prompts: {
         key: "prompts",
         value: {
-            moveGeneration: Prompts.defaultMovePrompt,
+            moveGeneration: Prompts.defaultAgenticPrompt,
             moveCorrection: Prompts.defaultMoveCorrectionPrompt
         }
     } as NStorage.SchemaItem<{
         moveGeneration: string;
         moveCorrection: string;
     }>,
+    sound_enabled: {
+        key: "sound_enabled",
+        value: true
+    } as NStorage.SchemaItem<boolean>,
 };
 
 async function repair()
@@ -48,6 +52,7 @@ async function init()
         await checkAndStore(Schema.api_keys);
         await checkAndStore(Schema.retries);
         await checkAndStore(Schema.prompts);
+        await checkAndStore(Schema.sound_enabled);
     }
     catch (err)
     {
@@ -62,6 +67,7 @@ async function reset()
         await store(Schema.api_keys, Schema.api_keys.value);
         await store(Schema.retries, Schema.retries.value);
         await store(Schema.prompts, Schema.prompts.value);
+        await store(Schema.sound_enabled, Schema.sound_enabled.value);
     }
     catch (err)
     {

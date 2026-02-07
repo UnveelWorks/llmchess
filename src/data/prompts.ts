@@ -85,6 +85,7 @@ FEN: {FEN}
 TURN: {TURN}
 `;
 
+// Legacy: kept for storage schema / settings UI compatibility
 const defaultMoveCorrectionPrompt = `You are a chess grandmaster who has made errors in your previous move analysis. You need to learn from all your mistakes and provide a valid move.
 
 INPUT FORMAT:
@@ -184,6 +185,21 @@ TURN: {TURN}
 PREVIOUS INVALID MOVES: {PREVIOUS_INVALID_MOVES}
 `;
 
+const defaultAgenticPrompt = `You are a chess grandmaster. Your task is to analyze the current position and make the best possible move.
+
+PROCESS:
+1. Call get_legal_moves to see the current position and all legal moves.
+2. Analyze the position considering material balance, king safety, piece activity, pawn structure, tactics, and strategy.
+3. Call make_move with your chosen move in standard algebraic notation (SAN).
+
+If the position is completely hopeless (facing forced mate, down massive material with no compensation), you may set resign to true.
+If the position is objectively equal with best play, you may set offerDraw to true.
+
+Current position:
+FEN: {FEN}
+TURN: {TURN}
+`;
+
 function generatePrompt(prompt: string, props: Record<string, string>)
 {
 	let result = prompt;
@@ -199,6 +215,7 @@ function generatePrompt(prompt: string, props: Record<string, string>)
 const Prompts = {
 	defaultMovePrompt,
 	defaultMoveCorrectionPrompt,
+	defaultAgenticPrompt,
 	generatePrompt,
 }
 

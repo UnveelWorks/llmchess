@@ -8,8 +8,8 @@ import { tryCatch } from './helpers/tryCatch';
 
 function App() 
 {
-	const { setApiKeys, setRetries, setPrompts } = useSettingsStore();
-	useEffect(() => 
+	const { setApiKeys, setRetries, setPrompts, setSoundEnabled } = useSettingsStore();
+	useEffect(() =>
 	{
 		(async () =>
 		{
@@ -23,6 +23,9 @@ function App()
 
 			const { data: prompts } = await tryCatch(Storage.get(Storage.Schema.prompts));
 			setPrompts(prompts || { moveGeneration: "", moveCorrection: "" });
+
+			const { data: soundEnabled } = await tryCatch(Storage.get(Storage.Schema.sound_enabled));
+			setSoundEnabled(soundEnabled ?? true);
 		})();
 	}, []);
 

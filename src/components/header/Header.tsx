@@ -4,7 +4,7 @@ import type { NAISDK } from "../../helpers/aisdk";
 import Container from "../container/Container";
 import IconButton from "../button/Button";
 import Modal, { ModalContent, ModalFooter, ModalHeader } from "../modal/Modal";
-import { CogSvg, GithubSvg, RotateCounterClockwiseSvg } from "../svgs/Svgs";
+import { CogSvg, GithubSvg, RotateCounterClockwiseSvg, SpeakerSvg, SpeakerOffSvg } from "../svgs/Svgs";
 import Input from "../input/Input";
 import Button from "../button/Button";
 import { getModel } from "../../helpers/aisdk";
@@ -19,13 +19,15 @@ import Prompts from "../../data/prompts";
 
 function Header()
 {
-    const { 
-        apiKeys, 
-        retries, 
-        prompts, 
-        setApiKeys, 
-        setRetries, 
-        setPrompts
+    const {
+        apiKeys,
+        retries,
+        prompts,
+        soundEnabled,
+        setApiKeys,
+        setRetries,
+        setPrompts,
+        setSoundEnabled
     } = useSettingsStore();
     const [settingsModalOpen, setSettingsModalOpen] = useState(false);
     const [openRouterApiKey, setOpenRouterApiKey] = useState("");
@@ -68,11 +70,17 @@ function Header()
         setMoveCorrectionPrompt(target.value);
     }, []);
 
-    const handleResetPrompts = useCallback(() => 
+    const handleResetPrompts = useCallback(() =>
     {
-        setMoveGenerationPrompt(Prompts.defaultMovePrompt.trim());
+        setMoveGenerationPrompt(Prompts.defaultAgenticPrompt.trim());
         setMoveCorrectionPrompt(Prompts.defaultMoveCorrectionPrompt.trim());
     }, []);
+
+    const toggleSound = useCallback(() => {
+        const newValue = !soundEnabled;
+        setSoundEnabled(newValue);
+        Storage.store(Storage.Schema.sound_enabled, newValue);
+    }, [soundEnabled, setSoundEnabled]);
 
     const verify = useCallback(async () => 
     {
@@ -168,6 +176,11 @@ function Header()
                     </div>
                     <ul className="flex flex-1 items-center justify-end gap-2">
                         <li>
+                            <IconButton type="medium" onlyIcon onClick={toggleSound}>
+                                {soundEnabled ? <SpeakerSvg className="w-5 h-5" /> : <SpeakerOffSvg className="w-5 h-5" />}
+                            </IconButton>
+                        </li>
+                        <li>
                             <IconButton type="medium" onClick={handleSettingsModalOpen}>
                                 <CogSvg className="w-5 h-5" />
                                 Settings
@@ -200,10 +213,10 @@ function Header()
                                     onChange={handleOpenRouterApiKeyChange}
                                 />
 
-                                <Input 
+                                <Input
                                     className="mt-0"
-                                    label="Number of Retries"
-                                    type="text" 
+                                    label="Max AI Steps"
+                                    type="text"
                                     placeholder="10"
                                     value={numberOfRetries.toString()}
                                     onChange={handleNumberOfRetriesChange}

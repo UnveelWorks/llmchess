@@ -1,5 +1,5 @@
-import { useCallback, useRef, useState } from "react";
-import { useGameStore } from "../../store/store";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getLegalMovesForSquare, useGameStore } from "../../store/store";
 import { GameMode, type Tile } from "../../types.d";
 import Piece from "../piece/Piece";
 import Utils from "../../helpers/utils";
@@ -31,8 +31,53 @@ function Board(props: {
         square: string;
         color: Color;
     } | null>(null);
+    const [legalDestinations, setLegalDestinations] = useState<string[]>([]);
+    const [animating, setAnimating] = useState<{ from: string; to: string; piece: Tile } | null>(null);
+    const animFrameRef = useRef(false);
 
-    const { game } = useGameStore();
+    const { game, isCheck } = useGameStore();
+
+    const inCheck = isCheck();
+    const kingInCheckSquare = useMemo(() => {
+        if (!inCheck) return null;
+        for (const row of game.board) {
+            for (const tile of row) {
+                if (tile && tile.type === "k" && tile.color === game.turn) {
+                    return tile.square;
+                }
+            }
+        }
+        return null;
+    }, [inCheck, game.board, game.turn]);
+
+    // Move animation
+    const prevLastMoveRef = useRef(game.lastMove);
+    useEffect(() => {
+        const prev = prevLastMoveRef.current;
+        const curr = game.lastMove;
+        prevLastMoveRef.current = curr;
+
+        if (!curr || curr === prev) return;
+        // Find the piece at the destination
+        for (const row of game.board) {
+            for (const tile of row) {
+                if (tile && tile.square === curr.to) {
+                    setAnimating({ from: curr.from, to: curr.to, piece: tile });
+                    animFrameRef.current = false;
+                    requestAnimationFrame(() => {
+                        animFrameRef.current = true;
+                        // Force re-render to apply transition
+                        setAnimating(a => a ? { ...a } : null);
+                    });
+                    const timer = setTimeout(() => setAnimating(null), 220);
+                    return () => clearTimeout(timer);
+                }
+            }
+        }
+    }, [game.lastMove, game.board]);
+
+    const isViewingHistory = game.viewingMoveIndex !== null;
+    const boardData = isViewingHistory && game.viewingBoard ? game.viewingBoard : game.board;
 
     const movePiece = useCallback((promotionPiece?: string) =>
     {
@@ -80,6 +125,7 @@ function Board(props: {
     {
         document.removeEventListener("mousemove", onMouseMove);
         document.removeEventListener("mouseup", onMouseUp);
+        setLegalDestinations([]);
 
         if (
             !draggingPieceRef.current ||
@@ -110,11 +156,14 @@ function Board(props: {
     {
         if (
             !game.playing ||
+            isViewingHistory ||
             game.mode !== GameMode.HumanVsAI ||
             game.playingAs !==  value.color
         ) return;
 
         e.preventDefault();
+
+        setLegalDestinations(getLegalMovesForSquare(value.square));
 
         const target = e.target as HTMLElement;
         const rect = target.getBoundingClientRect();
@@ -139,7 +188,7 @@ function Board(props: {
 
         document.addEventListener("mousemove", onMouseMove);
         document.addEventListener("mouseup", onMouseUp);
-    }, [game.playing, game.mode, game.playingAs]);
+    }, [game.playing, game.mode, game.playingAs, isViewingHistory]);
 
     const onTouchMove = useCallback((e: TouchEvent) => {
         const touch = e.touches[0];
@@ -162,6 +211,7 @@ function Board(props: {
     const onTouchEnd = useCallback(() => {
         document.removeEventListener("touchmove", onTouchMove);
         document.removeEventListener("touchend", onTouchEnd);
+        setLegalDestinations([]);
 
         if (
             !draggingPieceRef.current ||
@@ -193,11 +243,14 @@ function Board(props: {
     const onPieceTouchStart = useCallback((value: Tile, e: React.TouchEvent<HTMLImageElement>) => {
         if (
             !game.playing ||
+            isViewingHistory ||
             game.mode !== GameMode.HumanVsAI ||
             game.playingAs !== value.color
         ) return;
 
         e.preventDefault();
+
+        setLegalDestinations(getLegalMovesForSquare(value.square));
 
         const touch = e.touches[0];
         const target = e.target as HTMLElement;
@@ -223,11 +276,11 @@ function Board(props: {
 
         document.addEventListener("touchmove", onTouchMove, { passive: false });
         document.addEventListener("touchend", onTouchEnd);
-    }, [game.playing, game.mode, game.playingAs]);
+    }, [game.playing, game.mode, game.playingAs, isViewingHistory]);
 
     const boardToRender = game.playingAs === "b"
-        ? [...game.board].reverse().map((row) => [...row].reverse())
-        : game.board;
+        ? [...boardData].reverse().map((row) => [...row].reverse())
+        : boardData;
 
     const displayFiles = game.playingAs === "b" ? [...files].reverse() : files;
     const displayRanks = game.playingAs === "b" ? [...ranks].reverse() : ranks;
@@ -270,20 +323,47 @@ function Board(props: {
                                                     </span>
                                                 )}
                                                 {
-                                                    (
+                                                    !isViewingHistory && (
                                                         game.lastMove?.to === square ||
                                                         game.lastMove?.from === square
                                                     ) && (
                                                         <div className="absolute inset-0 bg-amber-400/25 pointer-events-none" />
                                                     )
                                                 }
+                                                {/* Check highlight */}
+                                                {kingInCheckSquare === square && (
+                                                    <div className="absolute inset-0 bg-red-500/40 pointer-events-none rounded-sm shadow-[inset_0_0_12px_rgba(239,68,68,0.5)]" />
+                                                )}
+                                                {/* Legal move indicators */}
+                                                {legalDestinations.includes(square) && (
+                                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[5]">
+                                                        {col ? (
+                                                            <div className="w-full h-full rounded-sm border-[3px] border-emerald-400/50" />
+                                                        ) : (
+                                                            <div className="w-[25%] h-[25%] rounded-full bg-emerald-400/40" />
+                                                        )}
+                                                    </div>
+                                                )}
                                                 <Piece
                                                     value={col}
                                                     onMouseDown={onPieceMouseDown}
                                                     onTouchStart={onPieceTouchStart}
                                                     style={{
                                                         visibility: draggingPieceRef.current?.value?.square === square ? "hidden" : "visible",
-                                                        pointerEvents: dragging ? "none" : "auto"
+                                                        pointerEvents: dragging || isViewingHistory ? "none" : "auto",
+                                                        ...(animating && animating.to === square && col ? (() => {
+                                                            const fromFile = animating.from.charCodeAt(0) - 97;
+                                                            const fromRank = 8 - parseInt(animating.from[1]);
+                                                            const toFile = square.charCodeAt(0) - 97;
+                                                            const toRank = 8 - parseInt(square[1]);
+                                                            let dCol = fromFile - toFile;
+                                                            let dRow = fromRank - toRank;
+                                                            if (game.playingAs === "b") { dCol = -dCol; dRow = -dRow; }
+                                                            if (animFrameRef.current) {
+                                                                return { transition: "transform 200ms ease-out", transform: "translate(0, 0)" };
+                                                            }
+                                                            return { transform: `translate(${dCol * 100}%, ${dRow * 100}%)` };
+                                                        })() : {})
                                                     }}
                                                 />
                                                 {

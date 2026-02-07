@@ -1,3 +1,5 @@
+import { useSettingsStore } from "../store/store";
+
 const sounds = {
 	move: new Audio('/audio/move.mp3'),
 	capture: new Audio('/audio/capture.mp3'),
@@ -9,6 +11,8 @@ const sounds = {
 type SoundType = keyof typeof sounds;
 
 function playSound(type: SoundType) {
+	const { soundEnabled } = useSettingsStore.getState();
+	if (!soundEnabled) return;
 	const audio = sounds[type].cloneNode() as HTMLAudioElement;
 	audio.play();
 }

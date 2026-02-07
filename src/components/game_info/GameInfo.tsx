@@ -181,6 +181,7 @@ function GameInfo()
                                 mode={game.mode}
                                 playingAs={game.playingAs}
                                 onNewGame={openNewGameModal}
+                                onClose={() => {}}
                             />
                         ) : (
                             <div className="absolute inset-0 flex items-center justify-center bg-neutral-700">
