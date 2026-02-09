@@ -58,7 +58,7 @@ function MoveHistory(props: {
                                         : isLatestWhite && props.viewingMoveIndex == null && "bg-blue-500/10 text-blue-300"
                                 )}
                                 onClick={() => props.onMoveClick?.(whiteMoveIndex)}
-                                title={isWhiteAi ? `${((whiteStats.inputTokens + whiteStats.outputTokens) / 1000).toFixed(1)}k tokens · ${whiteStats.steps} step${whiteStats.steps !== 1 ? 's' : ''}` : undefined}
+                                title={isWhiteAi ? `${((whiteStats.inputTokens + whiteStats.outputTokens) / 1000).toFixed(1)}k tokens · ${whiteStats.tries} ${whiteStats.tries !== 1 ? 'tries' : 'try'}` : undefined}
                             >
                                 <span className={twJoin("font-medium text-sm", isWhiteAi && !isViewingWhite && !(isLatestWhite && props.viewingMoveIndex == null) && "text-violet-300")}>
                                     {whiteMove || ''}
@@ -74,7 +74,7 @@ function MoveHistory(props: {
                                         : isLatestBlack && props.viewingMoveIndex == null && "bg-blue-500/10 text-blue-300"
                                 )}
                                 onClick={() => blackMove && props.onMoveClick?.(blackMoveIndex)}
-                                title={isBlackAi ? `${((blackStats.inputTokens + blackStats.outputTokens) / 1000).toFixed(1)}k tokens · ${blackStats.steps} step${blackStats.steps !== 1 ? 's' : ''}` : undefined}
+                                title={isBlackAi ? `${((blackStats.inputTokens + blackStats.outputTokens) / 1000).toFixed(1)}k tokens · ${blackStats.tries} ${blackStats.tries !== 1 ? 'tries' : 'try'}` : undefined}
                             >
                                 <span className={twJoin("font-medium text-sm", isBlackAi && !isViewingBlack && !(isLatestBlack && props.viewingMoveIndex == null) && "text-violet-300")}>
                                     {blackMove || ''}

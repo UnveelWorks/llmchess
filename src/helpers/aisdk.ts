@@ -28,7 +28,7 @@ export namespace NAISDK
         offerDraw: boolean;
         resign: boolean;
         usage: LanguageModelUsage;
-        steps: number;
+        tries: number;
     }
 }
 
@@ -227,7 +227,8 @@ class AISDK
         turn: string,
         getLegalMovesFn: () => string[],
         isLegalMoveFn: (san: string) => boolean,
-        maxSteps: number
+        maxSteps: number,
+        abortSignal?: AbortSignal
     ): Promise<NAISDK.AgenticMoveResult> =>
     {
         const openrouter = createOpenRouter({
@@ -283,6 +284,7 @@ class AISDK
             system: systemPrompt,
             prompt: `It is ${turn}'s turn. The current FEN is: ${fen}\n\nUse the get_legal_moves tool to see available moves, then use make_move to submit your chosen move.`,
             tools,
+            abortSignal,
             stopWhen: [
                 ({ steps }) => {
                     for (let i = steps.length - 1; i >= 0; i--) {
@@ -299,32 +301,40 @@ class AISDK
                     }
                     return false;
                 },
-                stepCountIs(maxSteps),
+                stepCountIs(maxSteps * 2),
             ],
         }));
 
         if (error) {
+            if (abortSignal?.aborted) throw error;
             console.log(error);
             throw new Error(error.message);
         }
 
-        // Find the successful make_move result
-        for (let i = result.steps.length - 1; i >= 0; i--) {
-            for (const toolResult of result.steps[i].toolResults) {
+        // Find the successful make_move result and count tries (each make_move call = 1 try)
+        let tries = 0;
+        let successResult: MakeMoveResult | null = null;
+        for (const step of result.steps) {
+            for (const toolResult of step.toolResults) {
                 if (toolResult.toolName === "make_move") {
+                    tries++;
                     const res = toolResult.output as MakeMoveResult;
                     if (res.success) {
-                        console.log(`AI completed in ${result.steps.length} step(s)`);
-                        return {
-                            move: res.move || "",
-                            offerDraw: res.offerDraw || false,
-                            resign: res.resign || false,
-                            usage: result.totalUsage,
-                            steps: result.steps.length,
-                        };
+                        successResult = res;
                     }
                 }
             }
+        }
+
+        if (successResult) {
+            console.log(`AI completed in ${tries} try/tries`);
+            return {
+                move: successResult.move || "",
+                offerDraw: successResult.offerDraw || false,
+                resign: successResult.resign || false,
+                usage: result.totalUsage,
+                tries,
+            };
         }
 
         throw new Error("AI did not produce a valid move within the step limit");

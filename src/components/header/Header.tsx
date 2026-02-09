@@ -108,7 +108,7 @@ function Header()
         const aisdk = new AISDK(apiKeys);
         if (openRouterApiKey)
         {
-            const model = getModel("gpt-4o-mini");
+            const model = getModel("gemini-3-flash-preview");
             const { error } = await tryCatch(aisdk.generateText(
                 model,
                 messages
@@ -215,9 +215,9 @@ function Header()
 
                                 <Input
                                     className="mt-0"
-                                    label="Max AI Steps"
+                                    label="Max AI Retries"
                                     type="text"
-                                    placeholder="10"
+                                    placeholder="5"
                                     value={numberOfRetries.toString()}
                                     onChange={handleNumberOfRetriesChange}
                                 />

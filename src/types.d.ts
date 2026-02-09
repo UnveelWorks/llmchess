@@ -10,13 +10,13 @@ export interface Tile {
 export interface AiColorStats {
     inputTokens: number;
     outputTokens: number;
-    steps: number;
+    tries: number;
 }
 
 export interface MoveStats {
     inputTokens: number;
     outputTokens: number;
-    steps: number;
+    tries: number;
 }
 
 export interface Game {

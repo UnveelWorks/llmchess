@@ -25,6 +25,8 @@ function Home()
     const { apiKeys, prompts, retries } = useSettingsStore();
     const lastTurn = useRef<Color>("w");
     const wasPlaying = useRef(false);
+    const abortControllerRef = useRef<AbortController | null>(null);
+    const generationIdRef = useRef(0);
     const [newGameModalOpen, setNewGameModalOpen] = useState(false);
     const [resignConfirmOpen, setResignConfirmOpen] = useState(false);
     const [gameOverDismissed, setGameOverDismissed] = useState(false);
@@ -47,9 +49,22 @@ function Home()
     },
     [game.mode, game.turn, game.playingAs, game.players]);
 
+    const abortCurrentGeneration = useCallback(() => {
+        generationIdRef.current += 1;
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+            abortControllerRef.current = null;
+        }
+    }, []);
+
     const getAiMove = useCallback(async (model: NAISDK.Model) =>
     {
         if (!game.playing) return;
+
+        const currentGenerationId = generationIdRef.current;
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+
         const ai = new AISDK(apiKeys);
         const fen = getFen();
         const turn = game.turn === "w" ? "white" : "black";
@@ -63,14 +78,21 @@ function Home()
         }
 
         console.log(`${game.turn === "w" ? "White" : "Black"}'s Turn: ${model.name}`);
-        console.log("Generating move (agentic)...");
+        console.log("Generating move...");
 
         const { data: result, error } = await tryCatch(
-            ai.generateAgenticMove(model, systemPrompt, fen, turn, getLegalMoves, isLegalMove, retries)
+            ai.generateAgenticMove(model, systemPrompt, fen, turn, getLegalMoves, isLegalMove, retries, controller.signal)
         );
 
-        // Re-check live state after async — game may have ended during the API call
-        if (!useGameStore.getState().game.playing) return;
+        // Stale generation or aborted — a new game or pause cancelled this one
+        if (currentGenerationId !== generationIdRef.current || controller.signal.aborted) {
+            console.log("Move generation aborted");
+            return;
+        }
+
+        // Re-check live state after async — game may have ended or been paused during the API call
+        const currentState = useGameStore.getState().game;
+        if (!currentState.playing || currentState.paused) return;
 
         if (error)
         {
@@ -80,7 +102,7 @@ function Home()
             return;
         }
 
-        console.log("Move:", result.move, `(${result.steps} steps)`);
+        console.log("Move:", result.move, `(${result.tries} try/tries)`);
 
         if (result.resign) {
             resign(game.turn);
@@ -102,15 +124,15 @@ function Home()
         if (!useGameStore.getState().game.playing) return;
 
         const totalTokens = (result.usage.inputTokens || 0) + (result.usage.outputTokens || 0);
-        addAiStats(game.turn, result.usage, result.steps);
-        toast(`AI moved in ${result.steps} step(s), ${totalTokens.toLocaleString()} tokens`, { icon: "🧠", duration: 2000 });
+        addAiStats(game.turn, result.usage, result.tries);
+        toast(`AI moved in ${result.tries} ${result.tries === 1 ? 'try' : 'tries'}, ${totalTokens.toLocaleString()} tokens`, { icon: "🧠", duration: 2000 });
 
         try {
             viewBoard(null);
             movePiece(result.move, {
                 inputTokens: result.usage.inputTokens || 0,
                 outputTokens: result.usage.outputTokens || 0,
-                steps: result.steps,
+                tries: result.tries,
             });
         } catch (err) {
             console.log("Failed to apply validated move:", err);
@@ -130,9 +152,42 @@ function Home()
     },
     [movePiece]);
 
+    const defaultTitle = "Play Chess with LLM or Let them Play Each Other | LLMChess";
+
+    useEffect(() => {
+        if (!game.playing) {
+            document.title = defaultTitle;
+            return;
+        }
+        if (game.mode === GameMode.HumanVsAI) {
+            document.title = game.turn === game.playingAs
+                ? "Your Turn | LLMChess"
+                : "AI is Thinking... | LLMChess";
+        } else {
+            const name = game.turn === "w"
+                ? game.players.white.model?.name || "White"
+                : game.players.black.model?.name || "Black";
+            document.title = `${name}'s Turn | LLMChess`;
+        }
+    }, [game.playing, game.turn, game.mode, game.playingAs, game.players]);
+
+    useEffect(() => {
+        return () => { document.title = defaultTitle; };
+    }, []);
+
+    useEffect(() => {
+        if (game.paused || !game.playing) {
+            abortCurrentGeneration();
+            if (game.paused) {
+                lastTurn.current = "" as Color; // force re-trigger on resume
+            }
+        }
+    }, [game.paused, game.playing, abortCurrentGeneration]);
+
     useEffect(() =>
     {
         if (game.playing && !wasPlaying.current) {
+            abortCurrentGeneration();
             lastTurn.current = "" as Color; // force mismatch on new game
             setGameOverDismissed(false);
         }
@@ -144,7 +199,7 @@ function Home()
         if (status) getAiMove(model!);
         lastTurn.current = game.turn;
     },
-    [game.playing, game.turn, game.paused, getAiMove, isAiMove]);
+    [game.playing, game.turn, game.paused, getAiMove, isAiMove, abortCurrentGeneration]);
 
     const openNewGameModal = useCallback(() => setNewGameModalOpen(true), []);
     const closeNewGameModal = useCallback(() => setNewGameModalOpen(false), []);

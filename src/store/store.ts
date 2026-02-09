@@ -11,7 +11,7 @@ interface GameStore {
 	resign: (color: Color) => void;
 	isCheck: () => boolean;
 	reset: () => void;
-	addAiStats: (color: Color, usage: { inputTokens: number | undefined; outputTokens: number | undefined }, steps: number) => void;
+	addAiStats: (color: Color, usage: { inputTokens: number | undefined; outputTokens: number | undefined }, tries: number) => void;
 	viewBoard: (index: number | null) => void;
 	setPaused: (paused: boolean) => void;
 	setDrawOffered: (offered: boolean) => void;
@@ -41,7 +41,7 @@ const useSettingsStore = create<SettingsStore>((set) => ({
 	apiKeys: {
 		openrouter: "",
 	},
-	retries: 10,
+	retries: 5,
 	prompts: {
 		moveGeneration: "",
 		moveCorrection: "",
@@ -93,8 +93,8 @@ function getGameResult(): GameResult | null {
 }
 
 const defaultAiStats = () => ({
-	white: { inputTokens: 0, outputTokens: 0, steps: 0 },
-	black: { inputTokens: 0, outputTokens: 0, steps: 0 },
+	white: { inputTokens: 0, outputTokens: 0, tries: 0 },
+	black: { inputTokens: 0, outputTokens: 0, tries: 0 },
 });
 
 const useGameStore = create<GameStore>((set) => ({
@@ -224,7 +224,7 @@ const useGameStore = create<GameStore>((set) => ({
 			}
 		});
 	},
-	addAiStats: (color: Color, usage: { inputTokens: number | undefined; outputTokens: number | undefined }, steps: number) => {
+	addAiStats: (color: Color, usage: { inputTokens: number | undefined; outputTokens: number | undefined }, tries: number) => {
 		set(prev => {
 			const key = color === "w" ? "white" : "black";
 			const current = prev.game.aiStats[key];
@@ -236,7 +236,7 @@ const useGameStore = create<GameStore>((set) => ({
 						[key]: {
 							inputTokens: current.inputTokens + (usage.inputTokens || 0),
 							outputTokens: current.outputTokens + (usage.outputTokens || 0),
-							steps: current.steps + steps,
+							tries: current.tries + tries,
 						},
 					},
 				},
