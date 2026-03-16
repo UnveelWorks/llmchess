@@ -29,11 +29,9 @@ const Schema = {
         key: "prompts",
         value: {
             moveGeneration: Prompts.defaultAgenticPrompt,
-            moveCorrection: Prompts.defaultMoveCorrectionPrompt
         }
     } as NStorage.SchemaItem<{
         moveGeneration: string;
-        moveCorrection: string;
     }>,
     sound_enabled: {
         key: "sound_enabled",

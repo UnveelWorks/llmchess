@@ -13,7 +13,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GameMode } from "../types.d";
 import type { NAISDK } from "../helpers/aisdk";
 import AISDK from "../helpers/aisdk";
-import Prompts from "../data/prompts";
+
 import { tryCatch } from "../helpers/tryCatch";
 import toast from "react-hot-toast";
 import type { Color } from "chess.js";
@@ -74,13 +74,10 @@ function Home()
         const ai = new AISDK(apiKeys);
         const fen = getFen();
         const turn = game.turn === "w" ? "white" : "black";
-        let systemPrompt = Prompts.generatePrompt(
-            prompts.moveGeneration,
-            { FEN: fen, TURN: turn }
-        );
+        let systemPrompt = prompts.moveGeneration;
 
         if (game.drawOffered) {
-            systemPrompt += "\n\nIMPORTANT: Your opponent has offered a draw. If you believe the position is equal or you are willing to accept, set offerDraw to true in your make_move call to accept the draw. If you decline, set offerDraw to false and play your best move.";
+            systemPrompt += "\nYour opponent has offered a draw. Set offerDraw to true to accept, or false to decline and play your best move.";
         }
 
         console.log(`${game.turn === "w" ? "White" : "Black"}'s Turn: ${model.name}`);
