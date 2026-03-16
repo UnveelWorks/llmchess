@@ -61,6 +61,12 @@ function Home()
     {
         if (!game.playing) return;
 
+        if (!apiKeys.openrouter || apiKeys.openrouter.trim() === "")
+        {
+            toast.error("OpenRouter API key is missing. Please add it in settings.");
+            return;
+        }
+
         const currentGenerationId = generationIdRef.current;
         const controller = new AbortController();
         abortControllerRef.current = controller;

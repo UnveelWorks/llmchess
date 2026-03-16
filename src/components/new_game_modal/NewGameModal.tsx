@@ -9,7 +9,8 @@ import { useCallback, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import Select from "../select/Select";
 import { Models } from "../../helpers/aisdk";
-import { useGameStore } from "../../store/store";
+import { useGameStore, useSettingsStore } from "../../store/store";
+import toast from "react-hot-toast";
 import type { Color } from "chess.js";
 
 const modes = [
@@ -51,6 +52,7 @@ function NewGameModal(props: {
 })
 {
     const { startGame } = useGameStore();
+    const { apiKeys } = useSettingsStore();
     const [gameMode, setLocalGameMode] = useState<GameMode>(GameMode.HumanVsAI);
     const [model1, setModel1] = useState<string>(models[0].value);
     const [model2, setModel2] = useState<string>(models[0].value);
@@ -78,6 +80,12 @@ function NewGameModal(props: {
 
     const start = useCallback(() =>
     {
+        if (!apiKeys.openrouter || apiKeys.openrouter.trim() === "")
+        {
+            toast.error("Please add your OpenRouter API key in settings before starting a game.");
+            return;
+        }
+
         const players: Players = {
             white: {
                 type: PlayerType.Human,
@@ -115,7 +123,7 @@ function NewGameModal(props: {
 
         startGame(players, gameMode, playingAs);
         props.onClose();
-    }, [model1, model2, pieceColor, gameMode, startGame]);
+    }, [model1, model2, pieceColor, gameMode, startGame, apiKeys]);
 
     return (
         <Modal open={props.open}>
