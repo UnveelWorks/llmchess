@@ -13,6 +13,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GameMode } from "../types.d";
 import type { NAISDK } from "../helpers/aisdk";
 import AISDK from "../helpers/aisdk";
+import Prompts from "../data/prompts";
 
 import { tryCatch } from "../helpers/tryCatch";
 import toast from "react-hot-toast";
@@ -77,7 +78,7 @@ function Home()
         let systemPrompt = prompts.moveGeneration;
 
         if (game.drawOffered) {
-            systemPrompt += "\nYour opponent has offered a draw. Set offerDraw to true to accept, or false to decline and play your best move.";
+            systemPrompt += Prompts.drawOfferedAddon;
         }
 
         console.log(`${game.turn === "w" ? "White" : "Black"}'s Turn: ${model.name}`);
