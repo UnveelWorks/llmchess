@@ -23,14 +23,12 @@ interface SettingsStore {
 	retries: number;
 	prompts: {
 		moveGeneration: string;
-		moveCorrection: string;
 	};
 	soundEnabled: boolean;
 	setApiKeys: (apiKeys: NAISDK.ApiKeys) => void;
 	setRetries: (retries: number) => void;
 	setPrompts: (prompts: {
 		moveGeneration: string;
-		moveCorrection: string;
 	}) => void;
 	setSoundEnabled: (enabled: boolean) => void;
 }
@@ -44,7 +42,6 @@ const useSettingsStore = create<SettingsStore>((set) => ({
 	retries: 5,
 	prompts: {
 		moveGeneration: "",
-		moveCorrection: "",
 	},
 	soundEnabled: true,
 	setApiKeys: (apiKeys: NAISDK.ApiKeys) =>
@@ -57,7 +54,6 @@ const useSettingsStore = create<SettingsStore>((set) => ({
 	},
 	setPrompts: (prompts: {
 		moveGeneration: string;
-		moveCorrection: string;
 	}) =>
 	{
 		set({ prompts });

@@ -33,7 +33,6 @@ function Header()
     const [openRouterApiKey, setOpenRouterApiKey] = useState("");
     const [numberOfRetries, setNumberOfRetries] = useState(10);
     const [moveGenerationPrompt, setMoveGenerationPrompt] = useState("");
-    const [moveCorrectionPrompt, setMoveCorrectionPrompt] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSettingsModalOpen = useCallback(() => 
@@ -64,16 +63,9 @@ function Header()
         setMoveGenerationPrompt(target.value);
     }, []);
 
-    const handleMoveCorrectionPromptChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => 
-    {
-        const target = e.target as HTMLTextAreaElement;
-        setMoveCorrectionPrompt(target.value);
-    }, []);
-
     const handleResetPrompts = useCallback(() =>
     {
         setMoveGenerationPrompt(Prompts.defaultAgenticPrompt.trim());
-        setMoveCorrectionPrompt(Prompts.defaultMoveCorrectionPrompt.trim());
     }, []);
 
     const toggleSound = useCallback(() => {
@@ -88,8 +80,7 @@ function Header()
             isLoading || 
             !openRouterApiKey ||
             !numberOfRetries ||
-            !moveGenerationPrompt ||
-            !moveCorrectionPrompt
+            !moveGenerationPrompt
         ) return;
         
         setIsLoading(true);
@@ -139,7 +130,6 @@ function Header()
 
         const newPrompts = {
             moveGeneration: moveGenerationPrompt,
-            moveCorrection: moveCorrectionPrompt
         };
 
         const { error: promptsError } = await tryCatch(Storage.store(Storage.Schema.prompts, newPrompts));
@@ -154,7 +144,7 @@ function Header()
         setPrompts(newPrompts);
         toast.success("Settings saved");
         handleSettingsModalClose();
-    }, [openRouterApiKey, numberOfRetries, moveGenerationPrompt, moveCorrectionPrompt, isLoading]);
+    }, [openRouterApiKey, numberOfRetries, moveGenerationPrompt, isLoading]);
 
     useEffect(() =>
     {
@@ -163,7 +153,6 @@ function Header()
         setOpenRouterApiKey(apiKeys.openrouter);
         setNumberOfRetries(retries);
         setMoveGenerationPrompt(prompts.moveGeneration);
-        setMoveCorrectionPrompt(prompts.moveCorrection);
     }, [settingsModalOpen]);
  
     return (
@@ -234,20 +223,12 @@ function Header()
                                     </Button>
                                 </div>
 
-                                <Textarea 
+                                <Textarea
                                     className="mt-0 h-48"
                                     label="Move Generation Prompt"
                                     placeholder="Generate a move for the given position"
                                     value={moveGenerationPrompt}
                                     onChange={handleMoveGenerationPromptChange}
-                                />
-
-                                <Textarea 
-                                    className="mt-0 h-48"
-                                    label="Move Correction Prompt"
-                                    placeholder="Correct the move for the given position"
-                                    value={moveCorrectionPrompt}
-                                    onChange={handleMoveCorrectionPromptChange}
                                 />
                             </div>
                         </ScrollView>

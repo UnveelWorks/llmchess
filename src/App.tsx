@@ -22,7 +22,7 @@ function App()
 			setRetries(retries || 10);
 
 			const { data: prompts } = await tryCatch(Storage.get(Storage.Schema.prompts));
-			setPrompts(prompts || { moveGeneration: "", moveCorrection: "" });
+			setPrompts(prompts || { moveGeneration: "" });
 
 			const { data: soundEnabled } = await tryCatch(Storage.get(Storage.Schema.sound_enabled));
 			setSoundEnabled(soundEnabled ?? true);
